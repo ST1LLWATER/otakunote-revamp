@@ -1,0 +1,8 @@
+overwrite: true
+schema: 'https://graphql.anilist.co'
+documents: 'src/app/lib/graphql/queries/*.ts'
+generates:
+  src/app/lib/graphql/generated/graphql.ts:
+    plugins:
+      - 'typescript'
+      - 'typescript-operations'
