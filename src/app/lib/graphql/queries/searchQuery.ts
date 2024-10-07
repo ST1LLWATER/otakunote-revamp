@@ -40,6 +40,7 @@ export const SEARCH_QUERY = gql`
           english
           romaji
         }
+        bannerImage
         coverImage {
           extraLarge
         }

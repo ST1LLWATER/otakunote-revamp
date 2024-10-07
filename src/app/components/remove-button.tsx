@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import axios from 'axios';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 
 interface RemoveButtonProps {
   mediaId: number;
@@ -39,19 +40,25 @@ export const REMOVE_BUTTON = ({ mediaId }: RemoveButtonProps) => {
   });
 
   return (
-    <Button
-      className="w-1/2 p-2"
-      onClick={() => mutation.mutate({ mediaId })}
-      variant="destructive"
-      size="sm"
-      disabled={isLoading}
-    >
-      {isLoading ? (
-        <span className="animate-spin mr-2">&#8987;</span>
-      ) : (
-        <Trash2 className="mr-2 h-4 w-4" />
-      )}
-      Remove
-    </Button>
+    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+      <Button
+        className="p-2 w-full flex items-center justify-center gap-2 bg-red-700 hover:bg-red-800 text-white"
+        onClick={() => mutation.mutate({ mediaId })}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <motion.span
+            className="inline-block mr-2"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          >
+            Loading...
+          </motion.span>
+        ) : (
+          <Trash2 className="h-4 w-4" />
+        )}
+        <p>Remove</p>
+      </Button>
+    </motion.div>
   );
 };

@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import axios from 'axios';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 
 interface WatchListPayload {
   isLoggedIn: boolean;
@@ -59,19 +60,25 @@ export const WATCHLIST_BUTTON = ({
   };
 
   return (
-    <Button
-      className="w-1/2 p-2"
-      onClick={handleClick}
-      variant="default"
-      size="sm"
-      disabled={isLoading}
-    >
-      {isLoading ? (
-        <span className="animate-spin mr-2">&#8987;</span>
-      ) : (
-        <Plus className="mr-2 h-4 w-4" />
-      )}
-      Add
-    </Button>
+    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+      <Button
+        className="p-2 w-full flex gap-2 items-center justify-center bg-purple-600 hover:bg-purple-700 text-white"
+        onClick={handleClick}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <motion.span
+            className="inline-block mr-2"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          >
+            Loading...
+          </motion.span>
+        ) : (
+          <Plus className="h-4 w-4" />
+        )}
+        <p>Add</p>
+      </Button>
+    </motion.div>
   );
 };

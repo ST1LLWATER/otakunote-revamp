@@ -10,6 +10,7 @@ import {
   AnimeRecommendationsQuery,
   AnimeRecommendationsQueryVariables,
 } from '@/lib/graphql/generated/graphql';
+import { ConstantData } from '../constants/filter-data';
 
 export const searchAnime = async (
   variables: SearchAnimeQueryVariables
@@ -47,4 +48,16 @@ export const getRecommendations = async (
   }
 
   return data.Page.recommendations;
+};
+
+export const getCalendar = async ({ season, year }) => {
+  const variables = {
+    type: 'ANIME',
+    season,
+    seasonYear: year,
+  };
+
+  const data = await searchAnime(variables);
+
+  return data;
 };
