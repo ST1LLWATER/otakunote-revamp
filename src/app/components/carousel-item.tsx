@@ -34,7 +34,7 @@ interface CarouselItemProps {
   item: AnimeItem;
 }
 
-export const CarouselItem: React.FC<CarouselItemProps> = ({ item }) => {
+export const CarouselItem: React.FC<CarouselItemProps> = ({ item, index }) => {
   const nextEpisodeDate =
     new Date(item?.nextAiringEpisode?.airingAt * 1000) ?? null;
 
@@ -48,7 +48,7 @@ export const CarouselItem: React.FC<CarouselItemProps> = ({ item }) => {
           className="w-full h-full object-cover"
         />
       </picture>
-      <div className="absolute inset-0 bg-black bg-opacity-50" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 to-black/20 pointer-events-none" />
       <div className="absolute top-2 sm:top-4 left-2 sm:left-4 right-2 sm:right-4 flex flex-col gap-2">
         <div className="flex flex-wrap gap-1 sm:gap-2">
           {item.genres.slice(0, 3).map((genre) => (
@@ -71,6 +71,9 @@ export const CarouselItem: React.FC<CarouselItemProps> = ({ item }) => {
       </div>
       <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4">
         <div className="flex flex-col gap-2">
+          <h2 className="text-xl font-semibold tracking-wide text-orange-500">{`#${
+            index + 1
+          } Spotlight`}</h2>
           <h2 className="text-white text-lg sm:text-2xl font-bold line-clamp-2">
             {item.title.english || item.title.romaji}
           </h2>

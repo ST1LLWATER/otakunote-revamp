@@ -1,6 +1,6 @@
 import React, { MouseEvent, useState, useEffect } from 'react';
 import { CardInterface } from '@/lib/types';
-import { animeModalAtom } from '@/store';
+import { detailsModalAtom } from '@/store';
 import { WATCHLIST_BUTTON } from './watchlist-button';
 import { REMOVE_BUTTON } from './remove-button';
 import { useAtom } from 'jotai';
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import TruncateText from './truncate-text';
 import { InfoIcon, StarIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getAnimeDetails } from '@/lib/api/animeApi';
 
 // const [description, setDescription] = useState(props.description);
 
@@ -22,9 +23,16 @@ interface IAnimeCard {
 }
 
 const AnimeCard = ({ anime, watchlisted, isLoggedIn }: IAnimeCard) => {
-  const [isModalOpen, setIsModalOpen] = useAtom(animeModalAtom);
+  const [isModalOpen, setIsModalOpen] = useAtom(detailsModalAtom);
   const [, setSelectedAnime] = useAtom(selectedAnimeAtom);
   const [isHovered, setIsHovered] = useState<string>('translateY(54px)');
+
+  const fetchAnimeDetails = async (id: number) => {
+    setIsModalOpen(true);
+    const details = await getAnimeDetails(id);
+    console.log(details);
+    setSelectedAnime(details);
+  };
 
   function onHover() {
     setIsHovered('translateY(0px)');
@@ -50,7 +58,7 @@ const AnimeCard = ({ anime, watchlisted, isLoggedIn }: IAnimeCard) => {
       <div
         onMouseOver={onHover}
         onMouseLeave={exitHover}
-        className="relative flex flex-col justify-end p-4 select-none overflow-hidden max-w-80 w-full h-96 shadow-lg rounded-lg z-10"
+        className="relative flex flex-col mx-auto justify-end p-4 select-none overflow-hidden w-full max-w-80 h-96 shadow-lg rounded-lg z-10"
       >
         <img
           src={anime.coverImage.extraLarge}
@@ -139,10 +147,10 @@ const AnimeCard = ({ anime, watchlisted, isLoggedIn }: IAnimeCard) => {
 
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
-                // onClick={(e: MouseEvent<HTMLButtonElement>) => {
-                //   setSelectedAnime({ id: anime.id, watchlisted });
-                //   setIsModalOpen(true);
-                // }}
+                onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                  // setSelectedAnime({ id: anime.id, watchlisted });
+                  fetchAnimeDetails(anime.id);
+                }}
                 variant="outline"
                 className="border-violet-600 px-2 w-full bg-transparent text-white"
               >

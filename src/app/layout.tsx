@@ -3,6 +3,8 @@ import localFont from 'next/font/local';
 import './globals.css';
 import ReactQueryProvider from './providers/ReactQueryProvider';
 import ThemeProvider from './providers/ThemeProvider';
+import { HeaderResponsive } from './components/header';
+import { SessionProvider } from './providers/SessionProvider';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -14,6 +16,21 @@ const geistMono = localFont({
   variable: '--font-geist-mono',
   weight: '100 900',
 });
+
+const links = [
+  {
+    link: '/',
+    label: 'Home',
+  },
+  {
+    link: '/watchlist',
+    label: 'Watchlist',
+  },
+  {
+    link: '/search',
+    label: 'Search',
+  },
+];
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -36,7 +53,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ReactQueryProvider>{children}</ReactQueryProvider>
+          <SessionProvider>
+            <ReactQueryProvider>
+              <div className="flex flex-col min-h-screen">
+                <HeaderResponsive links={links} />
+                <main className="flex-grow">{children}</main>
+              </div>
+            </ReactQueryProvider>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

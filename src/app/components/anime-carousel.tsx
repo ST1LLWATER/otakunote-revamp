@@ -91,7 +91,7 @@ export default function AnimeCarousel({ carouselItems }) {
         transition={{ type: 'tween', ease: 'easeInOut', duration: 0.5 }}
       >
         {carouselItems.map((item, index) => (
-          <CarouselItem key={index} item={item} />
+          <CarouselItem key={index} index={index} item={item} />
         ))}
       </motion.div>
 
