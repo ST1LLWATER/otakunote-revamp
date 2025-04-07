@@ -34,8 +34,6 @@ export default function Home() {
 
   const [selectedData, setSelectedData] = useAtom(selectedAnimeAtom);
 
-  console.log('🚀 ~ file: page.tsx:29 ~ Home ~ selectedData:', selectedData);
-
   const seasons = Object.keys(ConstantData.Season);
 
   enum MediaType {
@@ -177,8 +175,6 @@ export default function Home() {
       },
     }),
   };
-
-  console.log(data);
 
   return (
     <div className="container mx-auto px-4 py-8">

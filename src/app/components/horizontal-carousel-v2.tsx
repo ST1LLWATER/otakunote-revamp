@@ -28,8 +28,6 @@ interface CardType {
 }
 
 const Card3D = ({ card, index }: { card: CardType; index: number }) => {
-  console.log('🚀 ~ Card3D ~ card:', card);
-
   const cardRef = useRef<HTMLDivElement>(null);
   const [mouseEnter, setMouseEnter] = useState(false);
   const mouseX = useMotionValue(0);
@@ -86,7 +84,7 @@ const Card3D = ({ card, index }: { card: CardType; index: number }) => {
         <div
           className="h-96 max-w-64 flex-1 flex-shrink-0 bg-cover bg-center relative"
           style={{
-            backgroundImage: `url('${card.bannerImage}')`,
+            backgroundImage: `url('${card.coverImage.large}')`,
           }}
         >
           <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
@@ -112,7 +110,9 @@ const Card3D = ({ card, index }: { card: CardType; index: number }) => {
               }}
             >
               <h3 className="text-white text-xl font-bold text-center">
-                {card.title.english ?? card.title.romaji}
+                {card.title.english?.length !== 0
+                  ? card.title.english
+                  : card.title.romaji}
               </h3>
             </motion.div>
           </motion.div>
@@ -122,7 +122,7 @@ const Card3D = ({ card, index }: { card: CardType; index: number }) => {
   );
 };
 
-export default function HorizoontalCarousel({ cards }: { cards: CardType[] }) {
+export default function HorizontalCarousel({ cards }: { cards: CardType[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visibleCards, setVisibleCards] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);

@@ -283,7 +283,11 @@ const AnimeCard = ({
           <div className="text-lg mb-2 font-bold text-white leading-6">
             <TruncateText
               maxLines={3}
-              text={anime.title.english ?? anime.title.romaji}
+              text={
+                anime.title.english?.length !== 0
+                  ? anime.title.english
+                  : anime.title.romaji
+              }
             />
           </div>
           <Draggable className="flex items-center gap-2 mb-6 text-white overflow-x-auto no-scrollbar">
