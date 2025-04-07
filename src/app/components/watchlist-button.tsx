@@ -2,61 +2,75 @@
 
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { useMutation, useQueryClient } from 'react-query';
-import axios from 'axios';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { useWatchlistStore } from '@/store/watchlistStore';
+import type { CardInterface } from '@/lib/types';
+import type { AnimeItem } from './carousel-item';
+
+// Create a union type for anime data
+type AnimeData = CardInterface | AnimeItem;
 
 interface WatchListPayload {
   isLoggedIn: boolean;
-  mediaId: number;
+  mediaId: string;
   mediaType: string;
+  animeData?: AnimeData;
+  onWatchlistChange?: (added: boolean) => void; // Add callback
 }
-
-const addToWatchlist = async ({
-  mediaId,
-  mediaType,
-}: Omit<WatchListPayload, 'isLoggedIn'>) => {
-  const response = await axios.post('/api/watchlist/add', {
-    mediaId,
-    mediaType,
-  });
-  return response.data;
-};
 
 export const WATCHLIST_BUTTON = ({
   isLoggedIn,
   mediaId,
   mediaType,
+  animeData,
+  onWatchlistChange,
 }: WatchListPayload) => {
   const [isLoading, setIsLoading] = useState(false);
-  const queryClient = useQueryClient();
+  const watchlistStore = useWatchlistStore();
+  const addToWatchlist = watchlistStore?.addToWatchlist;
+  const isInWatchlist = watchlistStore?.isInWatchlist;
 
-  const mutation = useMutation({
-    mutationFn: addToWatchlist,
-    onMutate: () => {
-      setIsLoading(true);
+  // Safe function to check if something is in watchlist
+  const safeIsInWatchlist = useCallback(
+    (id: string) => {
+      return typeof isInWatchlist === 'function' ? isInWatchlist(id) : false;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['watchlist']);
-      toast.success('Added to watchlist');
-    },
-    onError: (error) => {
-      toast.error('Failed to add to watchlist');
-      console.error('Failed to add to watchlist', error);
-    },
-    onSettled: () => {
-      setIsLoading(false);
-    },
-  });
+    [isInWatchlist]
+  );
 
   const handleClick = () => {
     if (!isLoggedIn) {
       toast.error('Please log in to add to watchlist');
       return;
     }
-    mutation.mutate({ mediaId, mediaType });
+
+    // Check if addToWatchlist function exists
+    if (typeof addToWatchlist !== 'function') {
+      toast.error('Watchlist functionality is unavailable');
+      console.error('addToWatchlist function not available');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Pass the anime data to the store
+      addToWatchlist(mediaId, mediaType as 'ANIME' | 'MANGA', animeData);
+
+      // Notify parent component about the change
+      if (onWatchlistChange) {
+        onWatchlistChange(true);
+      }
+
+      toast.success('Added to watchlist');
+    } catch (error) {
+      toast.error('Failed to add to watchlist');
+      console.error('Failed to add to watchlist', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -70,7 +84,11 @@ export const WATCHLIST_BUTTON = ({
           <motion.span
             className="inline-block mr-2"
             animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            transition={{
+              duration: 1,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: 'linear',
+            }}
           >
             Loading...
           </motion.span>

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { format, formatDistanceToNow } from 'date-fns';
 
-interface AnimeItem {
+export interface AnimeItem {
   id: number;
   type: string;
   isAdult: boolean;
@@ -32,6 +32,7 @@ interface AnimeItem {
 
 interface CarouselItemProps {
   item: AnimeItem;
+  index: number;
 }
 
 export const CarouselItem: React.FC<CarouselItemProps> = ({ item, index }) => {

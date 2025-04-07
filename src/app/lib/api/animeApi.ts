@@ -3,12 +3,14 @@ import { SEARCH_QUERY } from '@/lib/graphql/queries/searchQuery';
 import { DATA_QUERY } from '@/lib/graphql/queries/dataQuery';
 import { RECOMMENDATION_QUERY } from '@/lib/graphql/queries/recommendationQuery';
 import {
-  SearchAnimeQuery,
-  SearchAnimeQueryVariables,
-  AnimeDetailsQuery,
+  type SearchAnimeQuery,
+  type SearchAnimeQueryVariables,
+  type AnimeDetailsQuery,
   AnimeDetailsQueryVariables,
-  AnimeRecommendationsQuery,
+  type AnimeRecommendationsQuery,
   AnimeRecommendationsQueryVariables,
+  type MediaType,
+  type MediaSeason,
 } from '@/lib/graphql/generated/graphql';
 import { ConstantData } from '../constants/filter-data';
 
@@ -27,7 +29,7 @@ export const searchAnime = async (
 };
 
 export const getAnimeDetails = async (
-  id: number
+  id: string
 ): Promise<AnimeDetailsQuery['Media']> => {
   const data = await graphqlRequest<AnimeDetailsQuery>(DATA_QUERY, { id });
   return data.Media;
@@ -35,7 +37,7 @@ export const getAnimeDetails = async (
 
 export const getRecommendations = async (
   mediaId: number,
-  page: number = 1
+  page = 1
 ): Promise<
   NonNullable<NonNullable<AnimeRecommendationsQuery['Page']>['recommendations']>
 > => {
@@ -50,12 +52,25 @@ export const getRecommendations = async (
   return data.Page.recommendations;
 };
 
-export const getCalendar = async ({ season, year }) => {
-  const variables = {
-    type: 'ANIME',
-    season,
+export const getCalendar = async ({
+  season,
+  year,
+  genres,
+}: {
+  season: string;
+  year: number;
+  genres?: string[];
+}) => {
+  const variables: SearchAnimeQueryVariables = {
+    type: 'ANIME' as MediaType,
+    season: season as MediaSeason,
     seasonYear: year,
   };
+
+  // Add genres if provided
+  if (genres && genres.length > 0) {
+    variables.genres = genres;
+  }
 
   const data = await searchAnime(variables);
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { signIn, useSession, signOut } from 'next-auth/react';
@@ -41,12 +41,13 @@ export function HeaderResponsive({ links }: HeaderResponsiveProps) {
   const [opened, setOpened] = useState(false);
   const [active, setActive] = useState<string | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   const { data: watchlistData } = useQuery(
-    ['watchlist', session?.user?.id],
-    () => fetchWatchlist(session?.user?.id as string),
+    ['watchlist', session?.user?.email],
+    () => fetchWatchlist(session?.user?.email as string),
     {
-      enabled: !!session?.user?.id && !watchlistedIds,
+      enabled: !!session?.user?.email && !watchlistedIds,
       onSuccess: (data) => {
         setWatchlistedIds(data.watchlist);
       },
@@ -54,8 +55,8 @@ export function HeaderResponsive({ links }: HeaderResponsiveProps) {
   );
 
   useEffect(() => {
-    setActive(router.pathname);
-  }, [router.pathname]);
+    setActive(pathname);
+  }, [pathname]);
 
   const items = links.map((link) => (
     <Link
@@ -84,12 +85,12 @@ export function HeaderResponsive({ links }: HeaderResponsiveProps) {
             <img src="/logo.svg" alt="" />
           </div>
 
-          <nav className="hidden sm:flex flex-grow justify-center space-x-4">
+          <nav className="hidden sm:flex flex-grow justify-end space-x-4">
             {items}
           </nav>
 
-          <div className="hidden sm:flex items-center flex-shrink-0">
-            {session && session.user ? (
+          {/* <div className="hidden sm:flex items-center flex-shrink-0">
+            {session?.user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -102,7 +103,7 @@ export function HeaderResponsive({ links }: HeaderResponsiveProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem>
-                    <a className="w-full">Import MAL Watchlist</a>
+                    <p className="w-full">Import MAL Watchlist</p>
                   </DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => console.log('SIGN OUT')}>
                     Sign Out
@@ -114,7 +115,7 @@ export function HeaderResponsive({ links }: HeaderResponsiveProps) {
                 Sign In
               </Button>
             )}
-          </div>
+          </div> */}
 
           <Sheet open={opened} onOpenChange={setOpened}>
             <SheetTrigger asChild>
@@ -126,26 +127,28 @@ export function HeaderResponsive({ links }: HeaderResponsiveProps) {
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <nav className="flex flex-col mt-4">
                 {items}
-                {session && session.user ? (
+                {/* {session?.user ? (
                   <>
-                    <a className="block py-2 px-4 text-sm font-semibold">
+                    <p className="block py-2 px-4 text-sm font-semibold">
                       Import MAL Watchlist
-                    </a>
-                    <a
+                    </p>
+                    <button
+                      type="button"
                       className="block py-2 px-4 text-sm font-semibold"
                       onClick={() => console.log('SIGN OUT')}
                     >
                       Sign Out
-                    </a>
+                    </button>
                   </>
                 ) : (
-                  <a
+                  <button
+                    type="button"
                     className="block py-2 px-4 text-sm font-semibold"
                     onClick={() => console.log('GOOGLE')}
                   >
                     Sign In
-                  </a>
-                )}
+                  </button>
+                )} */}
               </nav>
             </SheetContent>
           </Sheet>

@@ -1,4 +1,4 @@
-import React, { MouseEvent, useRef, ReactElement } from 'react';
+import React, { type MouseEvent, useRef, type ReactElement } from 'react';
 
 interface IDraggable {
   className: string | undefined;
@@ -9,24 +9,25 @@ const Draggable = ({ className, children }: IDraggable) => {
   const slider = useRef<HTMLDivElement>(null);
 
   let mouseDown = false;
-  let startX: number, scrollLeft: number;
+  let startX: number;
+  let scrollLeft: number;
 
-  const startDragging = function (e: MouseEvent<HTMLDivElement>) {
+  const startDragging = (e: MouseEvent<HTMLDivElement>) => {
     mouseDown = true;
-    startX = e.pageX - slider.current!.offsetLeft;
-    scrollLeft = slider.current!.scrollLeft;
+    startX = e.pageX - (slider.current?.offsetLeft ?? 0);
+    scrollLeft = slider.current?.scrollLeft ?? 0;
   };
   const stopDragging = () => {
     mouseDown = false;
   };
 
   function mouseMoveEvent(e: MouseEvent<HTMLDivElement>) {
-    if (!mouseDown) {
+    if (!mouseDown || !slider.current) {
       return;
     }
-    const x = e.pageX - slider.current!.offsetLeft;
+    const x = e.pageX - slider.current.offsetLeft;
     const scroll = x - startX;
-    slider.current!.scrollLeft = scrollLeft - scroll;
+    slider.current.scrollLeft = scrollLeft - scroll;
   }
 
   return (

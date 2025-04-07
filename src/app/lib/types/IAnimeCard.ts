@@ -1,5 +1,5 @@
 export interface CardInterface {
-  id: number;
+  id: string;
   type: CardType;
   isAdult: boolean;
   title: {

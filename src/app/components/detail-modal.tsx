@@ -5,6 +5,7 @@ import { StarIcon } from 'lucide-react';
 import React, { MouseEvent, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Draggable from './draggable';
+import DOMPurify from 'dompurify';
 import { Dialog, DialogContent } from './ui/dialog';
 import { useAtom } from 'jotai';
 import { detailsModalAtom, selectedAnimeAtom } from '@/store';
@@ -33,7 +34,7 @@ const DetailModal = ({ session = true, watchlisted = true }: ModalType) => {
         setIsOpen(!isOpen);
       }}
     >
-      <DialogContent className="max-w-4xl rounded-full overflow-hidden p-0">
+      <DialogContent className="max-w-4xl rounded-lg overflow-hidden p-0">
         <ScrollArea className="max-h-[80vh]">
           <div className="relative">
             <div
@@ -45,7 +46,7 @@ const DetailModal = ({ session = true, watchlisted = true }: ModalType) => {
                 height: '200px',
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/70 via-40%"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/70 via-40%" />
             </div>
             <div className="absolute bottom-0 left-0 p-4 z-10">
               <div className="flex items-center gap-2 text-white mb-2">
@@ -77,13 +78,22 @@ const DetailModal = ({ session = true, watchlisted = true }: ModalType) => {
             </div>
           </div>
           <div className="p-4 bg-neutral-900">
-            <div
-              className="text-md leading-6 mb-4"
-              dangerouslySetInnerHTML={{ __html: data.description || '' }}
-            ></div>
+            <div className="text-sm leading-6 mb-4">
+              {data.description && (
+                <div
+                  ref={(node) => {
+                    if (node) {
+                      node.innerHTML = DOMPurify.sanitize(
+                        data.description || ''
+                      );
+                    }
+                  }}
+                />
+              )}
+            </div>
             {(data.characterPreview?.edges?.length ?? 0) > 0 && (
               <Draggable className="flex mb-4 gap-5 w-full pb-2.5 cursor-pointer overflow-x-auto scrollbar-custom">
-                <>
+                <div className="flex gap-5">
                   {data.characterPreview?.edges?.map((character, index) => {
                     if (
                       !character ||
@@ -96,7 +106,7 @@ const DetailModal = ({ session = true, watchlisted = true }: ModalType) => {
 
                     return (
                       <div
-                        key={index}
+                        key={character.node.name.full}
                         className="whitespace-nowrap select-none flex flex-shrink-0 rounded-lg px-4 py-1 bg-gray-700/70 gap-2.5 items-center justify-start leading-6"
                       >
                         <img
@@ -116,7 +126,7 @@ const DetailModal = ({ session = true, watchlisted = true }: ModalType) => {
                       </div>
                     );
                   })}
-                </>
+                </div>
               </Draggable>
             )}
           </div>
@@ -145,7 +155,7 @@ function Loader({ isOpen }: { isOpen: boolean }) {
           initial="hidden"
           animate="visible"
           transition={{
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             duration: 1.5,
             ease: 'linear',
           }}
@@ -156,7 +166,7 @@ function Loader({ isOpen }: { isOpen: boolean }) {
           }}
         >
           {/* Banner image shimmer */}
-          <div className="h-[200px]"></div>
+          <div className="h-[200px]" />
           {/* Title area shimmer */}
           <div className="absolute bottom-0 left-0 p-4 z-10 w-full">
             <div className="flex items-center gap-2 mb-2">
@@ -164,11 +174,11 @@ function Loader({ isOpen }: { isOpen: boolean }) {
                 <div
                   key={i}
                   className="h-6 w-16 bg-neutral-700/50 rounded-full"
-                ></div>
+                />
               ))}
             </div>
-            <div className="h-8 w-3/4 bg-neutral-700/50 rounded mb-2"></div>
-            <div className="h-6 w-1/2 bg-neutral-700/50 rounded"></div>
+            <div className="h-8 w-3/4 bg-neutral-700/50 rounded mb-2" />
+            <div className="h-6 w-1/2 bg-neutral-700/50 rounded" />
           </div>
         </motion.div>
         <motion.div
@@ -177,7 +187,7 @@ function Loader({ isOpen }: { isOpen: boolean }) {
           initial="hidden"
           animate="visible"
           transition={{
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             duration: 1.5,
             ease: 'linear',
           }}
@@ -190,7 +200,7 @@ function Loader({ isOpen }: { isOpen: boolean }) {
           {/* Description shimmer */}
           <div className="space-y-2 mb-4">
             {[...Array(10)].map((i) => (
-              <div key={i} className="h-6 bg-neutral-800/50 rounded"></div>
+              <div key={i} className="h-6 bg-neutral-800/50 rounded" />
             ))}
           </div>
           {/* Character list shimmer */}
@@ -199,7 +209,7 @@ function Loader({ isOpen }: { isOpen: boolean }) {
               <div
                 key={i}
                 className="flex-shrink-0 w-48 h-16 bg-neutral-800/50 rounded-lg"
-              ></div>
+              />
             ))}
           </div>
         </motion.div>

@@ -5,6 +5,7 @@ import ReactQueryProvider from './providers/ReactQueryProvider';
 import ThemeProvider from './providers/ThemeProvider';
 import { HeaderResponsive } from './components/header';
 import { SessionProvider } from './providers/SessionProvider';
+import DetailModal from './components/detail-modal';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -58,6 +59,7 @@ export default function RootLayout({
               <div className="flex flex-col min-h-screen">
                 <HeaderResponsive links={links} />
                 <main className="flex-grow">{children}</main>
+                <DetailModal />
               </div>
             </ReactQueryProvider>
           </SessionProvider>

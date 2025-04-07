@@ -78,14 +78,16 @@ export default function AnimeCard({
         className="flex flex-col z-20"
       >
         <Draggable className="flex mb-4 overflow-x-auto gap-2 w-full cursor-pointer no-scrollbar">
-          {anime.genres.map((item: string, index: number) => (
-            <p
-              key={index}
-              className="whitespace-nowrap text-white px-2 py-1.5 text-xs rounded-md bg-[rgba(107,107,107,0.62)] border border-[rgba(142,140,147,0.2)] leading-4"
-            >
-              {item}
-            </p>
-          ))}
+          <div className="flex gap-2">
+            {anime.genres.map((item: string, index: number) => (
+              <p
+                key={index}
+                className="whitespace-nowrap text-white px-2 py-1.5 text-xs rounded-md bg-[rgba(107,107,107,0.62)] border border-[rgba(142,140,147,0.2)] leading-4"
+              >
+                {item}
+              </p>
+            ))}
+          </div>
         </Draggable>
         <div className="text-lg mb-2 font-bold text-white leading-6">
           <TruncateText
@@ -94,33 +96,35 @@ export default function AnimeCard({
           />
         </div>
         <Draggable className="flex items-center gap-2 mb-6 text-white overflow-x-auto no-scrollbar">
-          <div className="flex items-center justify-center gap-1 px-3 text-xs leading-6 border border-[rgba(161,161,161,0.2)] rounded-full">
-            <p>{anime.averageScore / 10}</p>
-            <StarIcon className="w-3 h-3 text-white fill-white" />
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center gap-1 px-3 text-xs leading-6 border border-[rgba(161,161,161,0.2)] rounded-full">
+              <p>{anime.averageScore / 10}</p>
+              <StarIcon className="w-3 h-3 text-white fill-white" />
+            </div>
+            {anime.episodes && (
+              <div className="flex items-center justify-center gap-1 px-3 text-xs leading-6 border border-[rgba(161,161,161,0.2)] rounded-full">
+                <p>EP</p>
+                {anime.status !== 'RELEASING' ? (
+                  <p>{anime.episodes}</p>
+                ) : (
+                  <p>{`${anime.nextAiringEpisode?.episode}/${anime.episodes}`}</p>
+                )}
+              </div>
+            )}
+            {anime.startDate.year && (
+              <div className="flex items-center justify-center gap-1 px-3 text-xs leading-6 border border-[rgba(161,161,161,0.2)] rounded-full">
+                {anime.startDate.month && (
+                  <p>
+                    {new Date(0, anime.startDate.month - 1).toLocaleString(
+                      'default',
+                      { month: 'short' }
+                    )}
+                  </p>
+                )}
+                <p>{anime.startDate.year}</p>
+              </div>
+            )}
           </div>
-          {anime.episodes && (
-            <div className="flex items-center justify-center gap-1 px-3 text-xs leading-6 border border-[rgba(161,161,161,0.2)] rounded-full">
-              <p>EP</p>
-              {anime.status != 'RELEASING' ? (
-                <p>{anime.episodes}</p>
-              ) : (
-                <p>{`${anime.nextAiringEpisode?.episode}/${anime.episodes}`}</p>
-              )}
-            </div>
-          )}
-          {anime.startDate.year && (
-            <div className="flex items-center justify-center gap-1 px-3 text-xs leading-6 border border-[rgba(161,161,161,0.2)] rounded-full">
-              {anime.startDate.month && (
-                <p>
-                  {new Date(0, anime.startDate.month - 1).toLocaleString(
-                    'default',
-                    { month: 'short' }
-                  )}
-                </p>
-              )}
-              <p>{anime.startDate.year}</p>
-            </div>
-          )}
         </Draggable>
         <div className="grid grid-cols-2 gap-4">
           {watchlisted ? (

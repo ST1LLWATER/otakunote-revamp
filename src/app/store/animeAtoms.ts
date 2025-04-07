@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
-import { CardInterface, SelectedAnime } from '@/lib/types';
-import { AnimeDetailsQuery } from '@/lib/graphql/generated/graphql';
+import { type CardInterface, SelectedAnime } from '@/lib/types';
+import type { AnimeDetailsQuery } from '@/lib/graphql/generated/graphql';
 
 export const watchlistedIdsAtom = atom<number[] | null>(null);
 

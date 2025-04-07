@@ -1,9 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion, useAnimation, useMotionValue, PanInfo } from 'framer-motion';
+import {
+  motion,
+  useAnimation,
+  useMotionValue,
+  type PanInfo,
+} from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { CarouselItem } from './carousel-item';
+import { type AnimeItem, CarouselItem } from './carousel-item';
 
 const useCarousel = (length: number, interval = 5000) => {
   const [current, setCurrent] = useState(0);
@@ -58,7 +63,11 @@ const useCarousel = (length: number, interval = 5000) => {
   };
 };
 
-export default function AnimeCarousel({ carouselItems }) {
+export default function AnimeCarousel({
+  carouselItems,
+}: {
+  carouselItems: AnimeItem[];
+}) {
   const {
     current,
     setCurrent,
@@ -81,8 +90,8 @@ export default function AnimeCarousel({ carouselItems }) {
         drag="x"
         dragConstraints={{
           left:
-            -containerRef.current?.offsetWidth * (carouselItems.length - 1) ||
-            0,
+            -(containerRef.current?.offsetWidth ?? 0) *
+            (carouselItems.length - 1),
           right: 0,
         }}
         dragElastic={0.1}
@@ -96,6 +105,7 @@ export default function AnimeCarousel({ carouselItems }) {
       </motion.div>
 
       <button
+        type="button"
         onClick={previousSlide}
         className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         aria-label="Previous slide"
@@ -104,6 +114,7 @@ export default function AnimeCarousel({ carouselItems }) {
       </button>
 
       <button
+        type="button"
         onClick={nextSlide}
         className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         aria-label="Next slide"
@@ -112,9 +123,10 @@ export default function AnimeCarousel({ carouselItems }) {
       </button>
 
       <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
-        {carouselItems.map((_, index) => (
+        {carouselItems.map((item, index) => (
           <button
-            key={index}
+            key={item.id || `carousel-dot-${index}`}
+            type="button"
             onClick={() => setCurrent(index)}
             className={`w-8 h-1 rounded-full transition-all duration-300 ${
               index === current ? 'bg-white w-12' : 'bg-white/50'

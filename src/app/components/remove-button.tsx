@@ -2,55 +2,62 @@
 
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-import { useMutation, useQueryClient } from 'react-query';
-import axios from 'axios';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { useWatchlistStore } from '@/store/watchlistStore';
 
 interface RemoveButtonProps {
-  mediaId: number;
+  mediaId: string;
+  onRemove?: () => void;
 }
 
-const removeFromWatchlist = async ({ mediaId }: RemoveButtonProps) => {
-  const response = await axios.post('/api/watchlist/remove', { mediaId });
-  return response.data;
-};
-
-export const REMOVE_BUTTON = ({ mediaId }: RemoveButtonProps) => {
+export const REMOVE_BUTTON = ({ mediaId, onRemove }: RemoveButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const queryClient = useQueryClient();
+  const watchlistStore = useWatchlistStore();
+  const removeFromWatchlist = watchlistStore?.removeFromWatchlist;
 
-  const mutation = useMutation({
-    mutationFn: removeFromWatchlist,
-    onMutate: () => {
-      setIsLoading(true);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['watchlist']);
+  const handleClick = async () => {
+    if (typeof removeFromWatchlist !== 'function') {
+      toast.error('Watchlist functionality is unavailable');
+      console.error('removeFromWatchlist function not available');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      removeFromWatchlist(mediaId);
       toast.success('Removed from watchlist');
-    },
-    onError: (error) => {
+
+      // Call onRemove callback if provided
+      if (onRemove) {
+        onRemove();
+      }
+    } catch (error) {
       toast.error('Failed to remove from watchlist');
       console.error('Failed to remove from watchlist', error);
-    },
-    onSettled: () => {
+    } finally {
       setIsLoading(false);
-    },
-  });
+    }
+  };
 
   return (
     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
       <Button
-        className="p-2 w-full flex items-center justify-center gap-2 bg-red-700 hover:bg-red-800 text-white"
-        onClick={() => mutation.mutate({ mediaId })}
+        className="p-2 w-full flex gap-2 items-center justify-center bg-red-600 hover:bg-red-700 text-white"
+        onClick={handleClick}
         disabled={isLoading}
       >
         {isLoading ? (
           <motion.span
             className="inline-block mr-2"
             animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            transition={{
+              duration: 1,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: 'linear',
+            }}
           >
             Loading...
           </motion.span>

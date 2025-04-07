@@ -4,77 +4,37 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { List, CheckCircle, Play, Clock, XCircle, Filter } from 'lucide-react';
 import AllAnimes from './AllAnimes';
+import { useWatchlistStore } from '@/store/watchlistStore';
 
 type TabType = 'All' | 'Completed' | 'Watching' | 'Plan to Watch' | 'Dropped';
-
-const AllContent = () => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    {['Completed', 'Watching', 'Plan to Watch', 'Dropped'].map((status) => (
-      <div key={status} className="bg-white p-4 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-2">{status}</h3>
-        <p className="text-gray-600">Sample content for {status} items</p>
-      </div>
-    ))}
-  </div>
-);
-
-const CompletedContent = () => (
-  <div className="space-y-4">
-    <div className="bg-white p-4 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-2">Completed Show 1</h3>
-      <p className="text-gray-600">You finished this show on DD/MM/YYYY</p>
-    </div>
-    <div className="bg-white p-4 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-2">Completed Show 2</h3>
-      <p className="text-gray-600">You finished this show on DD/MM/YYYY</p>
-    </div>
-  </div>
-);
-
-const WatchingContent = () => (
-  <div className="space-y-4">
-    <div className="bg-white p-4 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-2">Currently Watching 1</h3>
-      <p className="text-gray-600">You're on episode 5 of 12</p>
-    </div>
-    <div className="bg-white p-4 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-2">Currently Watching 2</h3>
-      <p className="text-gray-600">You're on episode 3 of 24</p>
-    </div>
-  </div>
-);
-
-const PlanToWatchContent = () => (
-  <div className="space-y-4">
-    <div className="bg-white p-4 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-2">Plan to Watch 1</h3>
-      <p className="text-gray-600">Added to your watchlist on DD/MM/YYYY</p>
-    </div>
-    <div className="bg-white p-4 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-2">Plan to Watch 2</h3>
-      <p className="text-gray-600">Added to your watchlist on DD/MM/YYYY</p>
-    </div>
-  </div>
-);
-
-const DroppedContent = () => (
-  <div className="space-y-4">
-    <div className="bg-white p-4 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-2">Dropped Show 1</h3>
-      <p className="text-gray-600">You dropped this show after 3 episodes</p>
-    </div>
-    <div className="bg-white p-4 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-2">Dropped Show 2</h3>
-      <p className="text-gray-600">You dropped this show after 1 episode</p>
-    </div>
-  </div>
-);
 
 export default function WatchlistPage() {
   const [activeTab, setActiveTab] = useState<TabType>('All');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Access the watchlist store to get watchlist items
+  const watchlistStore = useWatchlistStore();
+  const items = watchlistStore?.items || [];
+  const updateWatchlistStatus = watchlistStore?.updateWatchlistStatus;
+
+  // Calculate the counts for each status
+  const counts = {
+    all: Array.isArray(items) ? items.length : 0,
+    completed: Array.isArray(items)
+      ? items.filter((item) => item.status === 'completed').length
+      : 0,
+    watching: Array.isArray(items)
+      ? items.filter((item) => item.status === 'watching').length
+      : 0,
+    plan_to_watch: Array.isArray(items)
+      ? items.filter((item) => item.status === 'plan_to_watch').length
+      : 0,
+    dropped: Array.isArray(items)
+      ? items.filter((item) => item.status === 'dropped').length
+      : 0,
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -103,12 +63,20 @@ export default function WatchlistPage() {
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-  const tabs: { name: TabType; icon: React.ReactNode }[] = [
-    { name: 'All', icon: <List size={20} /> },
-    { name: 'Completed', icon: <CheckCircle size={20} /> },
-    { name: 'Watching', icon: <Play size={20} /> },
-    { name: 'Plan to Watch', icon: <Clock size={20} /> },
-    { name: 'Dropped', icon: <XCircle size={20} /> },
+  const tabs: { name: TabType; icon: React.ReactNode; count: number }[] = [
+    { name: 'All', icon: <List size={20} />, count: counts.all },
+    {
+      name: 'Completed',
+      icon: <CheckCircle size={20} />,
+      count: counts.completed,
+    },
+    { name: 'Watching', icon: <Play size={20} />, count: counts.watching },
+    {
+      name: 'Plan to Watch',
+      icon: <Clock size={20} />,
+      count: counts.plan_to_watch,
+    },
+    { name: 'Dropped', icon: <XCircle size={20} />, count: counts.dropped },
   ];
 
   const FilterTabs = () => (
@@ -131,31 +99,46 @@ export default function WatchlistPage() {
           whileTap={{ scale: 0.95 }}
         >
           {tab.icon}
-          <span className="ml-2">{tab.name}</span>
+          <span className="ml-2 flex-grow">{tab.name}</span>
+          <span className="bg-gray-800 text-gray-300 px-2 py-0.5 rounded-full text-xs">
+            {tab.count}
+          </span>
         </motion.button>
       ))}
     </nav>
   );
 
-  const renderContent = () => {
+  // Filter anime IDs based on the active tab
+  const getFilteredAnimeIds = () => {
+    if (!Array.isArray(items) || items.length === 0) return [];
+
     switch (activeTab) {
       case 'All':
-        return <AllAnimes />;
+        return items.map((item) => item.id); // Return all IDs
       case 'Completed':
-        return <AllAnimes />;
+        console.log('COMPLETED ITEMS', items);
+        return items
+          .filter((item) => item.status === 'completed')
+          .map((item) => item.id);
       case 'Watching':
-        return <WatchingContent />;
+        return items
+          .filter((item) => item.status === 'watching')
+          .map((item) => item.id);
       case 'Plan to Watch':
-        return <PlanToWatchContent />;
+        return items
+          .filter((item) => item.status === 'plan_to_watch')
+          .map((item) => item.id);
       case 'Dropped':
-        return <DroppedContent />;
+        return items
+          .filter((item) => item.status === 'dropped')
+          .map((item) => item.id);
       default:
-        return <div>No content available</div>;
+        return items.map((item) => item.id); // Default to all
     }
   };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-gray-100">
+    <div className="flex h-[calc(100vh-64px)] bg-background text-foreground">
       {/* Sidebar */}
       <AnimatePresence>
         {(isSidebarOpen || isDesktop) && (
@@ -169,9 +152,9 @@ export default function WatchlistPage() {
               isDesktop ? 'w-64' : 'fixed top-0 left-0 h-full w-64 z-40'
             } bg-gray-900 shadow-lg flex flex-col`}
           >
-            <div className="bg-gray-800 p-4">
+            {/* <div className="bg-gray-800 p-4">
               <h2 className="text-xl font-bold text-white">Watchlist</h2>
-            </div>
+            </div> */}
             <div className="flex-grow overflow-y-auto p-4">
               <FilterTabs />
             </div>
@@ -180,14 +163,14 @@ export default function WatchlistPage() {
       </AnimatePresence>
 
       {/* Main content */}
-      <div className="flex-1 overflow-y-auto no-scrollbar">
+      <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar">
         {/* Header with Filter button */}
-        <div className="bg-white shadow-md p-4 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-800">
-            {activeTab == 'All' ? 'All Animes' : activeTab}
+        <div className="bg-gray-800 shadow-md p-4 flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-gray-100">
+            {activeTab === 'All' ? 'All Animes' : activeTab}
           </h2>
           <motion.button
-            className="md:hidden bg-gray-800 text-white px-4 py-2 rounded-md flex items-center"
+            className="md:hidden bg-gray-700 text-white px-4 py-2 rounded-md flex items-center"
             onClick={toggleSidebar}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -198,7 +181,9 @@ export default function WatchlistPage() {
         </div>
 
         {/* Content */}
-        <div className="p-4">{renderContent()}</div>
+        <div className="p-4 flex-1 bg-gray-900">
+          <AllAnimes filterIds={getFilteredAnimeIds()} />
+        </div>
       </div>
     </div>
   );
