@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,7 +10,9 @@ import {
   useMotionValue,
   useTransform,
   type PanInfo,
+  AnimatePresence,
 } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 // Define proper type for card
 interface CardType {
@@ -35,6 +37,8 @@ const Card3D = ({ card, index }: { card: CardType; index: number }) => {
 
   const rotateX = useTransform(mouseY, [-0.5, 0.5], ['17.5deg', '-17.5deg']);
   const rotateY = useTransform(mouseX, [-0.5, 0.5], ['-17.5deg', '17.5deg']);
+  const scale = useTransform(mouseX, [-0.5, 0, 0.5], [0.95, 1.05, 0.95]);
+  const brightness = useTransform(mouseY, [-0.5, 0.5], [1.2, 0.8]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
@@ -49,75 +53,107 @@ const Card3D = ({ card, index }: { card: CardType; index: number }) => {
   return (
     <motion.div
       ref={cardRef}
-      className="mx-2 bg-transparent rounded-lg overflow-hidden shadow-md transition-all duration-300 ease-out"
+      className="bg-transparent rounded-lg overflow-visible shadow-lg transition-all duration-300 ease-out group"
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setMouseEnter(true)}
       onMouseLeave={() => setMouseEnter(false)}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      whileHover={{
+        scale: 1.02,
+        boxShadow:
+          '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        transition: { duration: 0.3 },
+      }}
       style={{
         transformStyle: 'preserve-3d',
+        perspective: '1200px',
         rotateX: mouseEnter ? rotateX : 0,
         rotateY: mouseEnter ? rotateY : 0,
+        scale: mouseEnter ? scale : 1,
       }}
     >
-      <div className="flex items-end relative">
-        <div className="pr-2 flex-shrink-0 relative">
-          {/* <div
-            className="absolute bottom-full left-0 mb-2"
-            style={{
-              transform: 'rotate(-90deg)',
-              transformOrigin: 'left bottom',
-              width: '96px',
-              height: '24px',
-            }}
-          >
-            <span className="absolute bottom-0 right-0 text-sm font-semibold text-fuchsia-600 whitespace-nowrap bg-white px-2 py-1 rounded shadow-sm">
-              Lorem ipsum
-            </span>
-          </div> */}
-          <span
-            className="text-fuchsia-600 font-bold text-4xl"
-            style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}
-          >
-            {(index + 1).toString().padStart(2, '0')}
-          </span>
-        </div>
-        <div
-          className="h-96 max-w-64 flex-1 flex-shrink-0 bg-cover bg-center relative"
+      <motion.div
+        className="h-96 w-full bg-cover bg-center relative"
+        style={{
+          backgroundImage: `url('${card.coverImage.extraLarge}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: mouseEnter
+            ? `brightness(${brightness.get()})`
+            : 'brightness(1)',
+        }}
+      >
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-70"
+          animate={{
+            opacity: mouseEnter ? 0.3 : 0.7,
+          }}
+        />
+
+        {/* Index number positioned at top right */}
+        <motion.div
+          className="absolute top-2 right-2 z-20"
           style={{
-            backgroundImage: `url('${card.coverImage.large}')`,
+            transformStyle: 'preserve-3d',
+            transform: 'translateZ(20px)',
           }}
         >
-          <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
+          <motion.span
+            className="text-fuchsia-600 bg-white/80 p-4 font-bold text-2xl w-10 h-10 flex items-center justify-center rounded-full"
+            animate={{
+              scale: mouseEnter ? 1.2 : 1,
+              rotate: mouseEnter ? -5 : 0,
+            }}
+            transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+          >
+            {(index + 1).toString().padStart(2, '0')}
+          </motion.span>
+        </motion.div>
+
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          style={{
+            rotateX: mouseEnter ? rotateX : 0,
+            rotateY: mouseEnter ? rotateY : 0,
+            transformStyle: 'preserve-3d',
+          }}
+        >
           <motion.div
-            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            className="w-full px-6 py-8 absolute bottom-0 left-0"
+            initial={{ opacity: 1, y: 0, z: 0 }}
+            animate={
+              mouseEnter
+                ? { opacity: 1, y: 0, z: 50 }
+                : { opacity: 1, y: 0, z: 0 }
+            }
+            transition={{ duration: 0.3 }}
             style={{
-              rotateX: mouseEnter ? rotateX : 0,
-              rotateY: mouseEnter ? rotateY : 0,
-              transformStyle: 'preserve-3d',
+              transform: mouseEnter ? 'translateZ(50px)' : 'translateZ(0)',
             }}
           >
-            <motion.div
-              className="bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg p-4 rounded-lg"
-              initial={{ opacity: 0, y: 20, z: 0 }}
-              animate={
-                mouseEnter
-                  ? { opacity: 1, y: 0, z: 50 }
-                  : { opacity: 0, y: 20, z: 0 }
-              }
-              transition={{ duration: 0.3 }}
-              style={{
-                transform: 'translateZ(50px)',
+            <motion.h3
+              className="text-white text-xl font-bold"
+              animate={{
+                scale: mouseEnter ? 1.1 : 1,
+                y: mouseEnter ? -5 : 0,
               }}
+              transition={{ type: 'spring', stiffness: 400 }}
             >
-              <h3 className="text-white text-xl font-bold text-center">
-                {card.title.english?.length !== 0
-                  ? card.title.english
-                  : card.title.romaji}
-              </h3>
-            </motion.div>
+              {card.title.english?.length !== 0
+                ? card.title.english
+                : card.title.romaji}
+            </motion.h3>
+
+            <motion.div
+              className="w-0 h-1 bg-fuchsia-500 mt-2"
+              animate={{ width: mouseEnter ? '100%' : '0%' }}
+              transition={{ duration: 0.3 }}
+            />
           </motion.div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </motion.div>
   );
 };
@@ -128,6 +164,9 @@ export default function HorizontalCarousel({ cards }: { cards: CardType[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
   const controls = useAnimation();
+  const [hoveredButton, setHoveredButton] = useState<'prev' | 'next' | null>(
+    null
+  );
 
   useEffect(() => {
     const handleResize = () => {
@@ -193,18 +232,40 @@ export default function HorizontalCarousel({ cards }: { cards: CardType[] }) {
     }
   };
 
+  const jumpToIndex = (index: number) => {
+    setCurrentIndex(index);
+    scrollToIndex(index);
+  };
+
+  const paginationItems = useMemo(
+    () =>
+      Array.from({ length: Math.ceil(cards.length - visibleCards + 1) }).map(
+        (_, index) => ({ id: `page-${cards[0]?.id || 0}-${index}`, index })
+      ),
+    [cards, visibleCards]
+  );
+
   return (
-    <div className="w-full mx-auto px-4" ref={containerRef}>
+    <div className="w-full mx-auto px-6 py-8" ref={containerRef}>
       <div className="relative">
-        <motion.div className="overflow-hidden" ref={carouselRef}>
+        <motion.div
+          className="overflow-visible rounded-xl"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          ref={carouselRef}
+        >
           <motion.div
             className="flex"
             style={{
               width: `${(cards.length / visibleCards) * 100}%`,
+              perspective: '1000px',
             }}
             drag="x"
             dragConstraints={{
-              left: -(cards.length - visibleCards) * (100 / visibleCards),
+              left:
+                -(cards.length - visibleCards) *
+                ((100 / cards.length) * visibleCards),
               right: 0,
             }}
             dragElastic={0.1}
@@ -215,7 +276,7 @@ export default function HorizontalCarousel({ cards }: { cards: CardType[] }) {
             {cards.map((card: CardType, index: number) => (
               <motion.div
                 key={card.id}
-                className="flex-shrink-0 snap-start"
+                className="flex-shrink-0 snap-start px-2 py-3"
                 style={{
                   width: `${100 / cards.length}%`,
                 }}
@@ -225,26 +286,97 @@ export default function HorizontalCarousel({ cards }: { cards: CardType[] }) {
             ))}
           </motion.div>
         </motion.div>
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1/2"
-          onClick={prevSlide}
-          disabled={currentIndex === 0}
+
+        <motion.div
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1/2 z-10"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          animate={{
+            x: currentIndex === 0 ? -30 : -20,
+            opacity: currentIndex === 0 ? 0.5 : 1,
+          }}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          onHoverStart={() => setHoveredButton('prev')}
+          onHoverEnd={() => setHoveredButton(null)}
         >
-          <ChevronLeft className="h-4 w-4" />
-          <span className="sr-only">Previous slide</span>
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1/2"
-          onClick={nextSlide}
-          disabled={currentIndex + visibleCards >= cards.length}
+          <Button
+            variant="outline"
+            size="icon"
+            className={cn(
+              'h-12 w-12 rounded-full bg-white/80 backdrop-blur-sm shadow-lg transition-all',
+              hoveredButton === 'prev' ? 'bg-white' : 'bg-white/80',
+              currentIndex === 0
+                ? 'cursor-not-allowed opacity-50'
+                : 'cursor-pointer'
+            )}
+            onClick={prevSlide}
+            disabled={currentIndex === 0}
+          >
+            <ChevronLeft
+              className={cn(
+                'h-6 w-6 transition-colors',
+                hoveredButton === 'prev' ? 'text-fuchsia-600' : 'text-gray-800'
+              )}
+            />
+            <span className="sr-only">Previous slide</span>
+          </Button>
+        </motion.div>
+
+        <motion.div
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1/2 z-10"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          animate={{
+            x: currentIndex + visibleCards >= cards.length ? 30 : 20,
+            opacity: currentIndex + visibleCards >= cards.length ? 0.5 : 1,
+          }}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          onHoverStart={() => setHoveredButton('next')}
+          onHoverEnd={() => setHoveredButton(null)}
         >
-          <ChevronRight className="h-4 w-4" />
-          <span className="sr-only">Next slide</span>
-        </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className={cn(
+              'h-12 w-12 rounded-full bg-white/80 backdrop-blur-sm shadow-lg transition-all',
+              hoveredButton === 'next' ? 'bg-white' : 'bg-white/80',
+              currentIndex + visibleCards >= cards.length
+                ? 'cursor-not-allowed opacity-50'
+                : 'cursor-pointer'
+            )}
+            onClick={nextSlide}
+            disabled={currentIndex + visibleCards >= cards.length}
+          >
+            <ChevronRight
+              className={cn(
+                'h-6 w-6 transition-colors',
+                hoveredButton === 'next' ? 'text-fuchsia-600' : 'text-gray-800'
+              )}
+            />
+            <span className="sr-only">Next slide</span>
+          </Button>
+        </motion.div>
+      </div>
+
+      {/* Pagination indicators */}
+      <div className="flex justify-center mt-6 gap-2">
+        {paginationItems.map((item) => (
+          <motion.button
+            key={item.id}
+            className={cn(
+              'w-2.5 h-2.5 rounded-full transition-all',
+              currentIndex === item.index
+                ? 'bg-fuchsia-600 w-8'
+                : 'bg-gray-300 hover:bg-gray-400'
+            )}
+            onClick={() => jumpToIndex(item.index)}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: item.index * 0.05 }}
+          />
+        ))}
       </div>
     </div>
   );
