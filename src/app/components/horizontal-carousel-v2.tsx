@@ -9,15 +9,24 @@ import {
   useAnimation,
   useMotionValue,
   useTransform,
+  type PanInfo,
 } from 'framer-motion';
 
-const Card3D = ({
-  card,
-  index,
-}: {
-  card: { id: number; name: string };
-  index: number;
-}) => {
+// Define proper type for card
+interface CardType {
+  id: number;
+  name?: string;
+  coverImage: {
+    extraLarge: string;
+    large?: string;
+  };
+  title: {
+    english: string | null;
+    romaji: string;
+  };
+}
+
+const Card3D = ({ card, index }: { card: CardType; index: number }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [mouseEnter, setMouseEnter] = useState(false);
   const mouseX = useMotionValue(0);
@@ -110,7 +119,7 @@ const Card3D = ({
   );
 };
 
-export default function HorizoontalCarousel({ cards }) {
+export default function HorizoontalCarousel({ cards }: { cards: CardType[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visibleCards, setVisibleCards] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -158,7 +167,10 @@ export default function HorizoontalCarousel({ cards }) {
     }
   };
 
-  const handleDragEnd = (event: any, info: any) => {
+  const handleDragEnd = (
+    event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo
+  ) => {
     if (carouselRef.current) {
       const cardWidth = carouselRef.current.offsetWidth / visibleCards;
       const draggedDistance = info.offset.x;
@@ -189,8 +201,7 @@ export default function HorizoontalCarousel({ cards }) {
             }}
             drag="x"
             dragConstraints={{
-              left:
-                -((cards.length - visibleCards) * (100 / visibleCards)) + '%',
+              left: -(cards.length - visibleCards) * (100 / visibleCards),
               right: 0,
             }}
             dragElastic={0.1}
@@ -198,7 +209,7 @@ export default function HorizoontalCarousel({ cards }) {
             onDragEnd={handleDragEnd}
             animate={controls}
           >
-            {cards.map((card, index) => (
+            {cards.map((card: CardType, index: number) => (
               <motion.div
                 key={card.id}
                 className="flex-shrink-0 snap-start"

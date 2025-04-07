@@ -3,10 +3,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { motion, useAnimation, useMotionValue } from 'framer-motion';
+import {
+  motion,
+  useAnimation,
+  useMotionValue,
+  type PanInfo,
+} from 'framer-motion';
 import TruncateText from './truncate-text';
 
-export default function HorizontalCarousel({ cards }) {
+// Define proper type for card
+interface CardType {
+  id: number;
+  coverImage: {
+    extraLarge: string;
+    large?: string;
+  };
+  title: {
+    english: string | null;
+    romaji: string;
+  };
+}
+
+export default function HorizontalCarousel({ cards }: { cards: CardType[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visibleCards, setVisibleCards] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -55,7 +73,10 @@ export default function HorizontalCarousel({ cards }) {
     }
   };
 
-  const handleDragEnd = (event: any, info: any) => {
+  const handleDragEnd = (
+    event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo
+  ) => {
     if (carouselRef.current) {
       const cardWidth = carouselRef.current.offsetWidth / visibleCards;
       const draggedDistance = info.offset.x;
@@ -90,8 +111,7 @@ export default function HorizontalCarousel({ cards }) {
             }}
             drag="x"
             dragConstraints={{
-              left:
-                -((cards.length - visibleCards) * (100 / visibleCards)) + '%',
+              left: -(cards.length - visibleCards) * (100 / visibleCards),
               right: 0,
             }}
             dragElastic={0.1}

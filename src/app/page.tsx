@@ -65,8 +65,7 @@ export default function Home() {
             },
             coverImage: {
               extraLarge: item.coverImage?.extraLarge || '',
-              large:
-                item.coverImage?.large || item.coverImage?.extraLarge || '',
+              large: item.coverImage?.extraLarge || '',
             },
             startDate: {
               year: item.startDate?.year || 0,
@@ -91,11 +90,7 @@ export default function Home() {
                   episode: 0,
                 },
             // Use fallback for bannerImage
-            bannerImage:
-              item.bannerImage ||
-              item.coverImage?.large ||
-              item.coverImage?.extraLarge ||
-              '',
+            bannerImage: item.coverImage?.extraLarge || '',
           })) as AnimeItem[];
 
         setData(formattedData);
