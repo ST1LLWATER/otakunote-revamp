@@ -16,6 +16,7 @@ import {
 interface CardType {
   id: number;
   name?: string;
+  bannerImage: string;
   coverImage: {
     extraLarge: string;
     large?: string;
@@ -27,6 +28,8 @@ interface CardType {
 }
 
 const Card3D = ({ card, index }: { card: CardType; index: number }) => {
+  console.log('🚀 ~ Card3D ~ card:', card);
+
   const cardRef = useRef<HTMLDivElement>(null);
   const [mouseEnter, setMouseEnter] = useState(false);
   const mouseX = useMotionValue(0);
@@ -83,7 +86,7 @@ const Card3D = ({ card, index }: { card: CardType; index: number }) => {
         <div
           className="h-96 max-w-64 flex-1 flex-shrink-0 bg-cover bg-center relative"
           style={{
-            backgroundImage: `url('${card.coverImage.extraLarge}')`,
+            backgroundImage: `url('${card.bannerImage}')`,
           }}
         >
           <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-50 transition-opacity duration-300" />

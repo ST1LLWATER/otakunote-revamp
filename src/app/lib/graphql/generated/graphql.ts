@@ -4686,6 +4686,7 @@ export type SearchAnimeQuery = {
       id: number;
       type?: MediaType | null;
       isAdult?: boolean | null;
+      bannerImage?: string | null;
       status?: MediaStatus | null;
       episodes?: number | null;
       genres?: Array<string | null> | null;

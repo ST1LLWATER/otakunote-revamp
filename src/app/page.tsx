@@ -90,7 +90,7 @@ export default function Home() {
                   episode: 0,
                 },
             // Use fallback for bannerImage
-            bannerImage: item.coverImage?.extraLarge || '',
+            bannerImage: item.bannerImage || '',
           })) as AnimeItem[];
 
         setData(formattedData);
