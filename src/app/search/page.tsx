@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
@@ -57,7 +57,8 @@ const convertToCardType = (mediaType: string | null | undefined): CardType => {
   return CardType.ANIME; // Default to ANIME if undefined
 };
 
-export default function SearchPage() {
+// Create a separate component that uses useSearchParams
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState<string>(
@@ -448,5 +449,20 @@ export default function SearchPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// Main component with Suspense
+export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-8">
+          Loading search page...
+        </div>
+      }
+    >
+      <SearchPageContent />
+    </Suspense>
   );
 }
