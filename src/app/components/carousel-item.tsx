@@ -42,12 +42,9 @@ export const CarouselItem: React.FC<CarouselItemProps> = ({ item, index }) => {
   return (
     <motion.div key={item.id} className="w-full h-full flex-shrink-0 relative">
       <picture>
-        <source
-          media="(min-width: 640px)"
-          srcSet={item.coverImage.extraLarge}
-        />
+        <source media="(min-width: 640px)" srcSet={item.bannerImage} />
         <img
-          src={item.coverImage.extraLarge}
+          src={item.bannerImage}
           alt={item.title.english || item.title.romaji}
           className="w-full h-full object-cover"
         />
