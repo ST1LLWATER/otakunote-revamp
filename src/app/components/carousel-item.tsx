@@ -42,7 +42,10 @@ export const CarouselItem: React.FC<CarouselItemProps> = ({ item, index }) => {
   return (
     <motion.div key={item.id} className="w-full h-full flex-shrink-0 relative">
       <picture>
-        <source media="(min-width: 640px)" srcSet={item.bannerImage} />
+        <source
+          media="(min-width: 640px)"
+          srcSet={item.coverImage.extraLarge}
+        />
         <img
           src={item.coverImage.extraLarge}
           alt={item.title.english || item.title.romaji}
@@ -107,7 +110,8 @@ export const CarouselItem: React.FC<CarouselItemProps> = ({ item, index }) => {
                 Next Ep: {item.nextAiringEpisode.episode}
               </div>
             )}
-            {nextEpisodeDate && !isNaN(new Date(nextEpisodeDate).getTime()) ? (
+            {nextEpisodeDate &&
+            !Number.isNaN(new Date(nextEpisodeDate).getTime()) ? (
               <div className="text-white text-sm sm:text-xs">
                 Airing:{' '}
                 {formatDistanceToNow(new Date(nextEpisodeDate), {
