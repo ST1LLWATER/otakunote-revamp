@@ -1,4 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OtakuNote 📒✨
+
+A beautiful, modern anime tracking app built with Next.js, Tailwind CSS, and a slick interactive UI. Track, search, and manage your anime watchlist with ease!
+
+---
+
+## 🚀 Features
+
+- 🎬 **Trending Anime Carousel:** See what's hot this season with a stunning, animated carousel.
+- 🔍 **Powerful Search:** Find anime by title, genre, or popularity with advanced filters.
+- 🏷️ **Genre Filtering:** Instantly filter anime by your favorite genres.
+- 🗂️ **Personal Watchlist:** Add, organize, and manage your anime with status tabs: Watching, Completed, Plan to Watch, Dropped.
+- 📝 **Detailed Anime Info:** Click any anime for a rich modal with synopsis, characters, and more.
+- 🌙 **Dark Mode:** Enjoy a sleek, eye-friendly interface day or night.
+- ⚡ **Fast & Responsive:** Built with Next.js 14, Framer Motion, and Tailwind CSS for a buttery-smooth experience.
+- 🛠️ **Modern Stack:** Next.js, React 18, Tailwind CSS, Jotai, Framer Motion, and more.
+
+---
+
+## 🧩 Project Structure
+
+- `src/app/` — Main app pages and logic
+  - `page.tsx` — Home/trending page
+  - `search/` — Search page with filters
+  - `watchlist/` — Personal watchlist with status tabs
+  - `components/` — UI components (carousels, cards, modals, etc.)
+- `public/` — Static assets (logo, icons)
+- `tailwind.config.ts` — Tailwind CSS config
+
+---
+
+## 📦 Tech Stack
+
+- **Framework:** Next.js 14, React 18
+- **Styling:** Tailwind CSS, Framer Motion
+- **State:** Jotai
+- **API:** GraphQL (codegen ready)
+- **UI:** Radix UI, Lucide Icons
+- **Other:** Sonner (toasts), Axios
+
+---
 
 ## Getting Started
 
