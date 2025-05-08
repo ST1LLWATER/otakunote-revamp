@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -176,6 +176,17 @@ export default function Home() {
     }),
   };
 
+  // Create shimmer item IDs
+  const shimmerIds = useMemo(
+    () =>
+      Array.from(
+        { length: 20 },
+        (_, i) =>
+          `shimmer-${debouncedSeason}-${debouncedYear}-${i}-${Date.now()}`
+      ),
+    [debouncedSeason, debouncedYear]
+  );
+
   return (
     <div className="container mx-auto px-4 py-8">
       <AnimeCarousel carouselItems={carouselData} />
@@ -183,7 +194,9 @@ export default function Home() {
         <h1 className="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-5xl dark:text-white">
           Trending
         </h1>
-        <Carousel cards={data.slice(0, 10)} />
+        <div className="relative w-full">
+          <Carousel cards={data.slice(0, 10)} />
+        </div>
       </div>
       <SeasonHeader
         season={season}
@@ -267,8 +280,8 @@ export default function Home() {
                 <AnimeCard anime={anime} isLoggedIn={true} />
               </motion.div>
             ))
-          : [...Array(20)].map((_, index) => (
-              <div key={`loading-${index}`} className="w-full h-full">
+          : shimmerIds.map((shimmerId) => (
+              <div key={shimmerId} className="w-full h-full">
                 <Shimmer />
               </div>
             ))}

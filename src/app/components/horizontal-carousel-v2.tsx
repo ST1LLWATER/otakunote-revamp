@@ -188,8 +188,11 @@ export default function HorizontalCarousel({ cards }: { cards: CardType[] }) {
   const scrollToIndex = (index: number) => {
     if (carouselRef.current) {
       const cardWidth = carouselRef.current.offsetWidth / visibleCards;
+      const maxScroll = (cards.length - visibleCards) * cardWidth;
+      const targetX = -Math.min(index * cardWidth, maxScroll);
+
       controls.start({
-        x: -index * cardWidth,
+        x: targetX,
         transition: { type: 'spring', stiffness: 300, damping: 30 },
       });
     }
@@ -217,18 +220,13 @@ export default function HorizontalCarousel({ cards }: { cards: CardType[] }) {
       const cardWidth = carouselRef.current.offsetWidth / visibleCards;
       const draggedDistance = info.offset.x;
       const draggedCards = Math.round(draggedDistance / cardWidth);
-      const newIndex = currentIndex - draggedCards;
+      const newIndex = Math.max(
+        0,
+        Math.min(currentIndex - draggedCards, cards.length - visibleCards)
+      );
 
-      if (newIndex < 0) {
-        setCurrentIndex(0);
-        scrollToIndex(0);
-      } else if (newIndex > cards.length - visibleCards) {
-        setCurrentIndex(cards.length - visibleCards);
-        scrollToIndex(cards.length - visibleCards);
-      } else {
-        setCurrentIndex(newIndex);
-        scrollToIndex(newIndex);
-      }
+      setCurrentIndex(newIndex);
+      scrollToIndex(newIndex);
     }
   };
 
@@ -247,9 +245,9 @@ export default function HorizontalCarousel({ cards }: { cards: CardType[] }) {
 
   return (
     <div className="w-full mx-auto px-6 py-8" ref={containerRef}>
-      <div className="relative">
+      <div className="relative px-12 overflow-hidden">
         <motion.div
-          className="overflow-visible rounded-xl"
+          className="overflow-hidden rounded-xl"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
@@ -260,14 +258,11 @@ export default function HorizontalCarousel({ cards }: { cards: CardType[] }) {
             style={{
               width: `${(cards.length / visibleCards) * 100}%`,
               perspective: '1000px',
+              x: 0,
             }}
+            initial={{ x: 0 }}
             drag="x"
-            dragConstraints={{
-              left:
-                -(cards.length - visibleCards) *
-                ((100 / cards.length) * visibleCards),
-              right: 0,
-            }}
+            dragConstraints={carouselRef}
             dragElastic={0.1}
             dragMomentum={false}
             onDragEnd={handleDragEnd}
@@ -288,11 +283,11 @@ export default function HorizontalCarousel({ cards }: { cards: CardType[] }) {
         </motion.div>
 
         <motion.div
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1/2 z-10"
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
+          style={{ left: 0 }}
           animate={{
-            x: currentIndex === 0 ? -30 : -20,
             opacity: currentIndex === 0 ? 0.5 : 1,
           }}
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -323,11 +318,11 @@ export default function HorizontalCarousel({ cards }: { cards: CardType[] }) {
         </motion.div>
 
         <motion.div
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1/2 z-10"
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
+          style={{ right: 0 }}
           animate={{
-            x: currentIndex + visibleCards >= cards.length ? 30 : 20,
             opacity: currentIndex + visibleCards >= cards.length ? 0.5 : 1,
           }}
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
