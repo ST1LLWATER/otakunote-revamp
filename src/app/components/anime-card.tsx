@@ -187,7 +187,7 @@ const AnimeCard = ({
         onMouseLeave={exitHover}
         onFocus={onHover}
         onBlur={exitHover}
-        className="relative flex flex-col mx-auto justify-end p-4 select-none overflow-hidden w-full max-w-72 h-96 shadow-lg rounded-lg z-10"
+        className="relative flex flex-col mx-auto justify-end p-4 select-none overflow-hidden w-full max-w-72 h-[400px] shadow-lg rounded-lg z-10"
       >
         <img
           src={anime.coverImage.extraLarge}
