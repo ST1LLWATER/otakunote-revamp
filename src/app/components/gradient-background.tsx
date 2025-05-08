@@ -42,6 +42,7 @@ export default function GradientBackground() {
 
     // Animation loop with frame rate control
     function animate(currentTime: number) {
+      if (!ctx || !canvas) return;
       // Skip frames to maintain target FPS
       if (currentTime - lastFrameTime < 1000 / targetFPS) {
         animationFrameId.current = requestAnimationFrame(animate);

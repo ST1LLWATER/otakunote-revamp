@@ -9,8 +9,6 @@ import Image from 'next/image';
 interface SignInPopupProps {
   isOpen: boolean;
   onClose: () => void;
-  onSignIn: () => void;
-  onContinueWithout: () => void;
 }
 
 export function SignInPopup({ isOpen, onClose }: SignInPopupProps) {
