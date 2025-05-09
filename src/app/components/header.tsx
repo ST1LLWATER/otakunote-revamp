@@ -5,7 +5,6 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signIn, useSession, signOut } from 'next-auth/react';
 import { useQuery } from 'react-query';
 import {
   ChevronDown,
@@ -54,7 +53,6 @@ const fetchWatchlist = async (userId: string) => {
 };
 
 export function HeaderResponsive({ links }: HeaderResponsiveProps) {
-  const { data: session } = useSession();
   const [watchlistedIds, setWatchlistedIds] = useAtom(watchlistedIdsAtom);
   const [opened, setOpened] = useState(false);
   const [active, setActive] = useState<string | null>(null);
@@ -62,17 +60,6 @@ export function HeaderResponsive({ links }: HeaderResponsiveProps) {
   const [isSignInPopupOpen, setIsSignInPopupOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-
-  const { data: watchlistData } = useQuery(
-    ['watchlist', session?.user?.email],
-    () => fetchWatchlist(session?.user?.email as string),
-    {
-      enabled: !!session?.user?.email && !watchlistedIds,
-      onSuccess: (data) => {
-        setWatchlistedIds(data.watchlist);
-      },
-    }
-  );
 
   useEffect(() => {
     setActive(pathname);
@@ -166,79 +153,16 @@ export function HeaderResponsive({ links }: HeaderResponsiveProps) {
                 size="icon"
                 className="text-gray-300 hover:text-white"
               >
-                <Search className="h-5 w-5" />
+                <Bell className="h-5 w-5" />
+                <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full" />
               </Button>
 
               <Button
-                variant="ghost"
-                size="icon"
-                className="text-gray-300 hover:text-white"
+                onClick={handleSignInClick}
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none hover:opacity-90"
               >
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full"></span>
+                Sign In?
               </Button>
-
-              {session?.user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="flex items-center space-x-2 text-gray-300 hover:text-white"
-                    >
-                      <Avatar className="h-8 w-8 border border-indigo-500/30">
-                        <AvatarImage
-                          src={session.user.image || ''}
-                          alt={session.user.name || ''}
-                        />
-                        <AvatarFallback className="bg-gradient-to-r from-indigo-500/30 to-purple-500/30 text-white">
-                          {session.user.name?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="hidden lg:inline-block">
-                        {session.user.name}
-                      </span>
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    className="w-56 bg-background/95 backdrop-blur-md border-indigo-500/20"
-                  >
-                    <div className="px-2 py-1.5 text-sm font-medium text-gray-400">
-                      Signed in as{' '}
-                      <span className="text-white">{session.user.email}</span>
-                    </div>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="cursor-pointer flex items-center">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer flex items-center">
-                      <Heart className="mr-2 h-4 w-4" />
-                      <span>Favorites</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer flex items-center">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="cursor-pointer flex items-center"
-                      onSelect={() => signOut()}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Sign Out</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button
-                  onClick={handleSignInClick}
-                  className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none hover:opacity-90"
-                >
-                  Sign In
-                </Button>
-              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -267,52 +191,16 @@ export function HeaderResponsive({ links }: HeaderResponsiveProps) {
                     </span>
                   </div>
 
-                  {session?.user && (
-                    <div className="mb-6 pb-6 border-b border-indigo-500/20">
-                      <div className="flex items-center space-x-3">
-                        <Avatar className="h-10 w-10 border border-indigo-500/30">
-                          <AvatarImage
-                            src={session.user.image || ''}
-                            alt={session.user.name || ''}
-                          />
-                          <AvatarFallback className="bg-gradient-to-r from-indigo-500/30 to-purple-500/30 text-white">
-                            {session.user.name?.charAt(0) || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            {session.user.name}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            {session.user.email}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   <nav className="flex flex-col space-y-1">{items}</nav>
 
-                  {session?.user ? (
-                    <div className="mt-auto pt-6 border-t border-indigo-500/20 space-y-1">
-                      <button
-                        className="flex w-full items-center py-2 px-4 text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white rounded-md"
-                        onClick={() => signOut()}
-                      >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Sign Out
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="mt-6 pt-6 border-t border-indigo-500/20">
-                      <Button
-                        onClick={handleSignInClick}
-                        className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none hover:opacity-90"
-                      >
-                        Sign In
-                      </Button>
-                    </div>
-                  )}
+                  <div className="mt-6 pt-6 border-t border-indigo-500/20">
+                    <Button
+                      onClick={handleSignInClick}
+                      className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none hover:opacity-90"
+                    >
+                      Sign In?
+                    </Button>
+                  </div>
                 </SheetContent>
               </Sheet>
             </div>

@@ -70,6 +70,22 @@ export default function LandingPage() {
   // Add this function inside the LandingPage component, near the top
   const [isLowPerfDevice, setIsLowPerfDevice] = useState(false);
 
+  // Add effect to prevent scrolling during splash screen
+  useEffect(() => {
+    if (showSplash) {
+      // Disable scrolling on body when splash screen is visible
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Re-enable scrolling when splash screen is gone
+      document.body.style.overflow = '';
+    }
+
+    // Cleanup function to ensure scrolling is re-enabled if component unmounts
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showSplash]);
+
   // Auto-rotate features
   useEffect(() => {
     const interval = setInterval(() => {
