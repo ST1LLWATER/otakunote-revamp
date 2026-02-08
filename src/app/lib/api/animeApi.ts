@@ -1,7 +1,10 @@
 import { graphqlRequest } from '@/lib/graphql/client';
 import { SEARCH_QUERY } from '@/lib/graphql/queries/searchQuery';
 import { DATA_QUERY } from '@/lib/graphql/queries/dataQuery';
-import { RECOMMENDATION_QUERY } from '@/lib/graphql/queries/recommendationQuery';
+import {
+  RECOMMENDATION_QUERY,
+  ANIME_RECOMMENDATIONS_QUERY,
+} from '@/lib/graphql/queries/recommendationQuery';
 import { ANIME_DETAIL_QUERY } from '@/lib/graphql/queries/animeDetailQuery';
 import {
   type SearchAnimeQuery,
@@ -87,4 +90,126 @@ export const getCalendar = async ({
   const data = await searchAnime(variables);
 
   return data;
+};
+
+export interface RecommendationItem {
+  id: string;
+  rating: number;
+  sourceAnime: {
+    id: string;
+    title: string;
+  };
+  anime: {
+    id: string;
+    title: {
+      romaji: string;
+      english: string;
+    };
+    type: string;
+    format: string;
+    status: string;
+    coverImage: {
+      extraLarge: string;
+      large: string;
+    };
+    averageScore: number;
+    episodes: number;
+    genres: string[];
+    isAdult: boolean;
+    startDate: {
+      year: number;
+    };
+  };
+}
+
+interface AnimeRecommendationsResponse {
+  Media: {
+    id: number;
+    title: {
+      romaji: string;
+      english: string;
+    };
+    recommendations: {
+      edges: Array<{
+        node: {
+          id: number;
+          rating: number;
+          mediaRecommendation: {
+            id: number;
+            title: {
+              romaji: string;
+              english: string;
+            };
+            type: string;
+            format: string;
+            status: string;
+            coverImage: {
+              extraLarge: string;
+              large: string;
+            };
+            averageScore: number;
+            episodes: number;
+            genres: string[];
+            isAdult: boolean;
+            startDate: {
+              year: number;
+            };
+          } | null;
+        };
+      }>;
+    };
+  };
+}
+
+export const getAnimeRecommendations = async (
+  animeId: number
+): Promise<RecommendationItem[]> => {
+  try {
+    const data = await graphqlRequest<AnimeRecommendationsResponse>(
+      ANIME_RECOMMENDATIONS_QUERY,
+      { id: animeId }
+    );
+
+    if (!data?.Media?.recommendations?.edges) {
+      return [];
+    }
+
+    const sourceTitle =
+      data.Media.title.english || data.Media.title.romaji || '';
+
+    return data.Media.recommendations.edges
+      .filter((edge) => edge.node.mediaRecommendation !== null)
+      .map((edge) => ({
+        id: `${data.Media.id}-${edge.node.mediaRecommendation!.id}`,
+        rating: edge.node.rating,
+        sourceAnime: {
+          id: String(data.Media.id),
+          title: sourceTitle,
+        },
+        anime: {
+          id: String(edge.node.mediaRecommendation!.id),
+          title: {
+            romaji: edge.node.mediaRecommendation!.title.romaji || '',
+            english: edge.node.mediaRecommendation!.title.english || '',
+          },
+          type: edge.node.mediaRecommendation!.type || 'ANIME',
+          format: edge.node.mediaRecommendation!.format || '',
+          status: edge.node.mediaRecommendation!.status || '',
+          coverImage: {
+            extraLarge: edge.node.mediaRecommendation!.coverImage?.extraLarge || '',
+            large: edge.node.mediaRecommendation!.coverImage?.large || '',
+          },
+          averageScore: edge.node.mediaRecommendation!.averageScore || 0,
+          episodes: edge.node.mediaRecommendation!.episodes || 0,
+          genres: edge.node.mediaRecommendation!.genres || [],
+          isAdult: edge.node.mediaRecommendation!.isAdult || false,
+          startDate: {
+            year: edge.node.mediaRecommendation!.startDate?.year || 0,
+          },
+        },
+      }));
+  } catch (error) {
+    console.error('Error fetching recommendations for anime:', animeId, error);
+    return [];
+  }
 };

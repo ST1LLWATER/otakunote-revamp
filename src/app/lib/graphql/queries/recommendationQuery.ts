@@ -23,3 +23,44 @@ export const RECOMMENDATION_QUERY = gql`
     }
   }
 `;
+
+export const ANIME_RECOMMENDATIONS_QUERY = gql`
+  query AnimeRecommendations($id: Int!) {
+    Media(id: $id, type: ANIME) {
+      id
+      title {
+        romaji
+        english
+      }
+      recommendations(sort: [RATING_DESC], perPage: 20, page: 1) {
+        edges {
+          node {
+            id
+            rating
+            mediaRecommendation {
+              id
+              title {
+                romaji
+                english
+              }
+              type
+              format
+              status
+              coverImage {
+                extraLarge
+                large
+              }
+              averageScore
+              episodes
+              genres
+              isAdult
+              startDate {
+                year
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
