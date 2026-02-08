@@ -3,6 +3,7 @@ import { gql } from 'graphql-tag';
 export const DATA_QUERY = gql`
   query AnimeDetails($id: Int) {
     Media(id: $id) {
+      id
       title {
         english
         romaji

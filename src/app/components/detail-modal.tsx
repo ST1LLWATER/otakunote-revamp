@@ -1,9 +1,10 @@
 'use client';
 
 import { ConstantData } from '@/lib/constants/filter-data';
-import { StarIcon } from 'lucide-react';
+import { StarIcon, ArrowRight } from 'lucide-react';
 import React, { MouseEvent, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import Draggable from './draggable';
 import DOMPurify from 'dompurify';
 import { Dialog, DialogContent } from './ui/dialog';
@@ -21,6 +22,7 @@ const DetailModal = ({ session = true, watchlisted = true }: ModalType) => {
   const [data, setData] = useAtom(selectedAnimeAtom);
 
   const [watchedEpisodes, setWatchedEpisodes] = useState(1);
+  const router = useRouter();
 
   if (!data) {
     return <Loader isOpen={isOpen} />;
@@ -129,6 +131,21 @@ const DetailModal = ({ session = true, watchlisted = true }: ModalType) => {
                 </div>
               </Draggable>
             )}
+            <button
+              type="button"
+              onClick={() => {
+                const mediaId = data.id ?? (data as any).id;
+                if (mediaId) {
+                  setData(null);
+                  setIsOpen(false);
+                  router.push(`/anime/${mediaId}`);
+                }
+              }}
+              className="flex items-center justify-center gap-2 w-full py-3 mt-2 text-sm font-medium text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded-lg transition-colors"
+            >
+              More Details
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </ScrollArea>
       </DialogContent>

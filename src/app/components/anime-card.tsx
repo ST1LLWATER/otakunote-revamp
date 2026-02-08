@@ -24,8 +24,10 @@ import {
   Clock,
   XCircle,
   Settings,
+  ExternalLink,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { getAnimeDetails } from '@/lib/api/animeApi';
 import {
   useWatchlistStore,
@@ -56,6 +58,7 @@ const AnimeCard = ({
   const [isModalOpen, setIsModalOpen] = useAtom(detailsModalAtom);
   const [, setSelectedAnime] = useAtom(selectedAnimeAtom);
   const [isHovered, setIsHovered] = useState<string>('translateY(54px)');
+  const router = useRouter();
 
   // Access the watchlist store to check if item is in watchlist
   const watchlistStore = useWatchlistStore();
@@ -203,16 +206,27 @@ const AnimeCard = ({
           }}
           className="absolute top-0 left-0 w-full h-full z-10"
         />
-        {anime.isAdult && (
-          <div className="absolute top-0 left-0 bg-red-600 text-white px-2 py-0.5 rounded-br-lg text-xs font-semibold">
-            NSFW
-          </div>
-        )}
         <div
-          className={`absolute top-0 right-0 ${getMediaBadgeColor()} text-white px-3 py-0.5 text-xs rounded-bl-lg font-semibold uppercase`}
+          className={`absolute top-0 left-0 ${getMediaBadgeColor()} text-white px-3 py-0.5 text-xs rounded-br-lg font-semibold uppercase z-20`}
         >
           {anime.type === 'ANIME' ? 'Anime' : 'Manga'}
         </div>
+        {anime.isAdult && (
+          <div className="absolute top-0 left-16 bg-red-600 text-white px-2 py-0.5 rounded-b-lg text-xs font-semibold z-20">
+            NSFW
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(`/anime/${animeId}`);
+          }}
+          className="absolute top-2 right-2 z-20 w-7 h-7 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-black/70 transition-colors"
+          title="View full details"
+        >
+          <ExternalLink className="w-3.5 h-3.5 text-white" />
+        </button>
 
         {/* Status indicator for watchlisted anime */}
         {isInWatchlistState && (

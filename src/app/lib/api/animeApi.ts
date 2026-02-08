@@ -2,11 +2,14 @@ import { graphqlRequest } from '@/lib/graphql/client';
 import { SEARCH_QUERY } from '@/lib/graphql/queries/searchQuery';
 import { DATA_QUERY } from '@/lib/graphql/queries/dataQuery';
 import { RECOMMENDATION_QUERY } from '@/lib/graphql/queries/recommendationQuery';
+import { ANIME_DETAIL_QUERY } from '@/lib/graphql/queries/animeDetailQuery';
 import {
   type SearchAnimeQuery,
   type SearchAnimeQueryVariables,
   type AnimeDetailsQuery,
   AnimeDetailsQueryVariables,
+  type AnimeDetailQuery,
+  type AnimeDetailQueryVariables,
   type AnimeRecommendationsQuery,
   AnimeRecommendationsQueryVariables,
   type MediaType,
@@ -50,6 +53,15 @@ export const getRecommendations = async (
   }
 
   return data.Page.recommendations;
+};
+
+export const getAnimeDetailPage = async (
+  id: number
+): Promise<AnimeDetailQuery['Media']> => {
+  const data = await graphqlRequest<AnimeDetailQuery>(ANIME_DETAIL_QUERY, {
+    id,
+  });
+  return data.Media;
 };
 
 export const getCalendar = async ({
