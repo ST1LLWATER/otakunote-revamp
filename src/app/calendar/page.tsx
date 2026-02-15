@@ -264,7 +264,7 @@ export default function Home() {
       )}
 
       <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 place-items-center"
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -291,7 +291,7 @@ export default function Home() {
 }
 
 const Shimmer = () => (
-  <div className="relative overflow-hidden bg-gray-200 dark:bg-gray-700 rounded-md w-full h-96">
+  <div className="relative overflow-hidden bg-gray-200 dark:bg-gray-700 rounded-lg w-full aspect-[2/3]">
     <motion.div
       className="absolute left-0 right-0 inset-0 w-full h-full"
       initial={{ x: '-100%' }}

@@ -13,19 +13,15 @@ import { useAtom } from 'jotai';
 import { selectedAnimeAtom } from '@/store';
 import { ConstantData } from '@/lib/constants/filter-data';
 import Draggable from '@/components/draggable';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import TruncateText from './truncate-text';
 import {
-  InfoIcon,
-  StarIcon,
-  Play,
-  CheckCircle,
-  Clock,
-  XCircle,
-  Settings,
-  ExternalLink,
-} from 'lucide-react';
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
+import TruncateText from './truncate-text';
+import { InfoIcon, StarIcon, Play, CheckCircle, Clock, XCircle, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { getAnimeDetails } from '@/lib/api/animeApi';
@@ -41,6 +37,13 @@ type AnimeData = CardInterface | AnimeItem;
 
 // Define watchlist status type
 type WatchlistStatus = 'watching' | 'completed' | 'plan_to_watch' | 'dropped';
+
+const STATUS_OPTIONS: { value: WatchlistStatus; label: string; icon: React.ReactNode }[] = [
+  { value: 'watching', label: 'Watching', icon: <Play className="h-4 w-4 text-green-500" /> },
+  { value: 'plan_to_watch', label: 'Plan to Watch', icon: <Clock className="h-4 w-4 text-yellow-400" /> },
+  { value: 'completed', label: 'Completed', icon: <CheckCircle className="h-4 w-4 text-blue-400" /> },
+  { value: 'dropped', label: 'Dropped', icon: <XCircle className="h-4 w-4 text-red-400" /> },
+];
 
 interface IAnimeCard {
   anime: AnimeData;
@@ -190,7 +193,7 @@ const AnimeCard = ({
         onMouseLeave={exitHover}
         onFocus={onHover}
         onBlur={exitHover}
-        className="relative flex flex-col mx-auto justify-end p-4 select-none overflow-hidden w-full max-w-72 h-[400px] shadow-lg rounded-lg z-10"
+        className="relative flex flex-col justify-end p-4 select-none overflow-hidden w-full aspect-[2/3] shadow-lg rounded-lg z-10"
       >
         <img
           src={anime.coverImage.extraLarge}
@@ -230,47 +233,45 @@ const AnimeCard = ({
 
         {/* Status indicator for watchlisted anime */}
         {isInWatchlistState && (
-          <div
-            className="absolute top-1 left-1 z-20"
-            title={`Status: ${getStatusLabel(
-              watchlistStatus
-            )} (Click to change)`}
-          >
-            <Button
-              onClick={() => {
-                const statusCycle: WatchlistStatus[] = [
-                  'plan_to_watch',
-                  'watching',
-                  'completed',
-                  'dropped',
-                ];
-                const currentIndex = statusCycle.indexOf(watchlistStatus);
-                const nextStatus =
-                  statusCycle[(currentIndex + 1) % statusCycle.length];
-
-                if (watchlistStore?.updateWatchlistStatus) {
-                  watchlistStore.updateWatchlistStatus(animeId, nextStatus);
-                  setWatchlistStatus(nextStatus);
-                  toast.success(`Status: ${getStatusLabel(nextStatus)}`);
-                }
-              }}
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 p-0 rounded-full bg-black bg-opacity-50"
-            >
-              {watchlistStatus === 'watching' && (
-                <Play className="h-4 w-4 text-green-500" />
-              )}
-              {watchlistStatus === 'completed' && (
-                <CheckCircle className="h-4 w-4 text-blue-400" />
-              )}
-              {watchlistStatus === 'plan_to_watch' && (
-                <Clock className="h-4 w-4 text-yellow-400" />
-              )}
-              {watchlistStatus === 'dropped' && (
-                <XCircle className="h-4 w-4 text-red-400" />
-              )}
-            </Button>
+          <div className="absolute top-1 left-1 z-30">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 p-0 rounded-full bg-black/60 backdrop-blur-sm hover:bg-black/80"
+                  title={`Status: ${getStatusLabel(watchlistStatus)}`}
+                >
+                  {STATUS_OPTIONS.find(s => s.value === watchlistStatus)?.icon || <Clock className="h-4 w-4 text-yellow-400" />}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                sideOffset={4}
+                className="min-w-[160px] bg-[#1a1a2e] border-white/10"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {STATUS_OPTIONS.map((option) => (
+                  <DropdownMenuItem
+                    key={option.value}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (watchlistStore?.updateWatchlistStatus) {
+                        watchlistStore.updateWatchlistStatus(animeId, option.value);
+                        setWatchlistStatus(option.value);
+                        toast.success(`Status: ${option.label}`);
+                      }
+                    }}
+                    className={`flex items-center gap-2 cursor-pointer ${
+                      watchlistStatus === option.value ? 'bg-white/10' : ''
+                    }`}
+                  >
+                    {option.icon}
+                    <span>{option.label}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
 
@@ -310,13 +311,13 @@ const AnimeCard = ({
                 <p>{anime?.averageScore / 10}</p>
                 <StarIcon className="w-3 h-3 text-white fill-white" />
               </div>
-              {anime.episodes && (
+              {anime.episodes > 0 && (
                 <div className="flex items-center justify-center gap-1 px-3 text-xs leading-6 border border-[rgba(161,161,161,0.2)] rounded-full">
                   <p>EP</p>
-                  {anime.status !== 'RELEASING' ? (
-                    <p>{anime.episodes}</p>
+                  {anime.status === 'RELEASING' && anime.nextAiringEpisode?.episode ? (
+                    <p>{`${anime.nextAiringEpisode.episode}/${anime.episodes}`}</p>
                   ) : (
-                    <p>{`${anime.nextAiringEpisode?.episode}/${anime.episodes}`}</p>
+                    <p>{anime.episodes}</p>
                   )}
                 </div>
               )}

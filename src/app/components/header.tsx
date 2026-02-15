@@ -19,6 +19,7 @@ import {
   Home,
   Compass,
   Calendar,
+  CalendarClock,
   BarChart4,
 } from 'lucide-react';
 import { useAtom } from 'jotai';
@@ -86,6 +87,7 @@ export function HeaderResponsive({ links }: HeaderResponsiveProps) {
       Discover: <Compass className="h-4 w-4" />,
       Watchlist: <BookOpen className="h-4 w-4" />,
       Calendar: <Calendar className="h-4 w-4" />,
+      Schedule: <CalendarClock className="h-4 w-4" />,
       Stats: <BarChart4 className="h-4 w-4" />,
       Search: <Search className="h-4 w-4" />,
     };

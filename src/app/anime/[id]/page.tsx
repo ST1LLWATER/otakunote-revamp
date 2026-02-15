@@ -1001,52 +1001,98 @@ function InfoCard({
 function LoadingSkeleton() {
   return (
     <div className="min-h-screen bg-[#0F0F1A]">
-      {/* Banner Skeleton */}
-      <div className="w-full h-[300px] md:h-[400px] bg-white/5 animate-pulse" />
+      {/* Banner */}
+      <div className="relative w-full h-[300px] md:h-[400px]">
+        <div className="absolute inset-0 bg-white/[0.03] animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F1A] via-[#0F0F1A]/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0F0F1A]/80 to-transparent" />
 
-      <div className="container mx-auto px-4 -mt-40 md:-mt-52">
+        <div className="absolute top-4 left-4 z-20">
+          <div className="w-10 h-10 rounded-full bg-white/5 animate-pulse" />
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 relative z-10 -mt-40 md:-mt-52">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Cover */}
-          <div className="w-[180px] md:w-[220px] aspect-[3/4] bg-white/10 rounded-xl animate-pulse mx-auto md:mx-0 flex-shrink-0" />
+          <div className="flex-shrink-0">
+            <div className="w-[180px] md:w-[220px] aspect-[3/4] bg-white/[0.06] rounded-xl animate-pulse mx-auto md:mx-0" />
+            <div className="hidden md:flex flex-col gap-2 mt-6 w-[220px]">
+              <div className="h-10 bg-white/[0.06] rounded-md animate-pulse" />
+              <div className="h-10 bg-white/[0.04] rounded-md animate-pulse" />
+            </div>
+          </div>
 
-          {/* Content */}
-          <div className="flex-1 space-y-4 pt-12">
+          {/* Info */}
+          <div className="flex-1 min-w-0 pt-4 md:pt-12 space-y-5">
+            {/* Badges */}
             <div className="flex gap-2">
-              <div className="h-6 w-20 bg-white/10 rounded-md animate-pulse" />
-              <div className="h-6 w-16 bg-white/10 rounded-md animate-pulse" />
+              <div className="h-5 w-16 bg-white/[0.06] rounded-full animate-pulse" />
+              <div className="h-5 w-20 bg-white/[0.06] rounded-full animate-pulse" />
+              <div className="h-5 w-24 bg-white/[0.06] rounded-full animate-pulse" />
             </div>
-            <div className="h-10 w-3/4 bg-white/10 rounded-lg animate-pulse" />
-            <div className="h-6 w-1/2 bg-white/10 rounded-md animate-pulse" />
-            <div className="flex gap-2 mt-4">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="h-8 w-20 bg-white/10 rounded-md animate-pulse" />
+
+            {/* Title */}
+            <div className="space-y-2">
+              <div className="h-10 w-3/4 bg-white/[0.08] rounded-lg animate-pulse" />
+              <div className="h-5 w-1/3 bg-white/[0.04] rounded-md animate-pulse" />
+            </div>
+
+            {/* Studio */}
+            <div className="h-4 w-32 bg-indigo-500/10 rounded-md animate-pulse" />
+
+            {/* Genres */}
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="h-6 rounded-full bg-white/[0.04] animate-pulse" style={{ width: `${50 + i * 10}px` }} />
               ))}
             </div>
-            <div className="flex gap-4 mt-6">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="h-12 w-28 bg-white/10 rounded-lg animate-pulse" />
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="h-14 bg-white/[0.04] rounded-lg border border-white/[0.06] animate-pulse" />
               ))}
             </div>
-            <div className="space-y-2 mt-6">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-4 bg-white/5 rounded animate-pulse" style={{ width: `${100 - i * 15}%` }} />
+
+            {/* Description */}
+            <div className="space-y-2 pt-2">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="h-4 bg-white/[0.04] rounded animate-pulse" style={{ width: `${100 - i * 12}%` }} />
               ))}
             </div>
           </div>
         </div>
 
-        {/* Tabs skeleton */}
+        {/* Tabs */}
         <div className="mt-10">
-          <div className="h-10 w-96 bg-white/5 rounded-lg animate-pulse mb-6" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                <div key={i} className="h-8 bg-white/5 rounded animate-pulse" />
+          <div className="flex gap-1 border-b border-white/[0.06] pb-px">
+            {[80, 96, 60, 56, 72].map((w, i) => (
+              <div key={i} className="h-10 rounded-lg bg-white/[0.04] animate-pulse" style={{ width: `${w}px` }} />
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5, 6, 7].map(i => (
+                <div key={i} className="space-y-1">
+                  <div className="h-3 w-16 bg-white/[0.04] rounded animate-pulse" />
+                  <div className="h-4 bg-white/[0.06] rounded animate-pulse" style={{ width: `${60 + (i * 7) % 30}%` }} />
+                </div>
               ))}
             </div>
             <div className="lg:col-span-2 space-y-4">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-24 bg-white/5 rounded-xl animate-pulse" />
+              <div className="aspect-video bg-white/[0.04] rounded-xl animate-pulse" />
+              {[1, 2].map(i => (
+                <div key={i} className="flex bg-white/[0.03] rounded-lg overflow-hidden animate-pulse">
+                  <div className="w-16 h-24 bg-white/[0.06] flex-shrink-0" />
+                  <div className="p-3 flex-1 space-y-2">
+                    <div className="h-3 w-16 bg-white/[0.04] rounded" />
+                    <div className="h-4 w-3/4 bg-white/[0.06] rounded" />
+                    <div className="h-3 w-1/2 bg-white/[0.04] rounded" />
+                  </div>
+                </div>
               ))}
             </div>
           </div>

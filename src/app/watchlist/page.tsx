@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   List,
   CheckCircle,
@@ -159,14 +159,14 @@ export default function WatchlistPage() {
     fetchRecommendations();
   }, [watchlistIds, items]);
 
-  const getFilteredAnimeIds = () => {
+  const filteredAnimeIds = useMemo(() => {
     if (!Array.isArray(items) || items.length === 0) return [];
     const tab = TAB_CONFIG.find((t) => t.name === activeTab);
     if (!tab || tab.key === 'all') return items.map((item) => item.id);
     return items
       .filter((item) => item.status === tab.key)
       .map((item) => item.id);
-  };
+  }, [items, activeTab]);
 
   const activeTabConfig =
     TAB_CONFIG.find((t) => t.name === activeTab) || TAB_CONFIG[0];
@@ -297,7 +297,7 @@ export default function WatchlistPage() {
 
           {/* Tabs */}
           <motion.div
-            className="flex gap-2 overflow-x-auto pb-1 scrollbar-none"
+            className="flex gap-2 overflow-x-auto pb-1 no-scrollbar"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.5 }}
@@ -350,24 +350,14 @@ export default function WatchlistPage() {
 
       {/* Content */}
       <div className="container mx-auto px-4 py-8">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25 }}
-          >
-            <AllAnimes
-              filterIds={getFilteredAnimeIds()}
-              activeTab={activeTab}
-              recommendations={activeTab === 'All' ? recommendations : []}
-              loadingRecommendations={
-                activeTab === 'All' ? loadingRecommendations : false
-              }
-            />
-          </motion.div>
-        </AnimatePresence>
+        <AllAnimes
+          filterIds={filteredAnimeIds}
+          activeTab={activeTab}
+          recommendations={activeTab === 'All' ? recommendations : []}
+          loadingRecommendations={
+            activeTab === 'All' ? loadingRecommendations : false
+          }
+        />
       </div>
     </div>
   );

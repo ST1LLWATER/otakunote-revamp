@@ -6,6 +6,7 @@ import {
   ANIME_RECOMMENDATIONS_QUERY,
 } from '@/lib/graphql/queries/recommendationQuery';
 import { ANIME_DETAIL_QUERY } from '@/lib/graphql/queries/animeDetailQuery';
+import { AIRING_SCHEDULE_QUERY } from '@/lib/graphql/queries/airingScheduleQuery';
 import {
   type SearchAnimeQuery,
   type SearchAnimeQueryVariables,
@@ -160,6 +161,83 @@ interface AnimeRecommendationsResponse {
     };
   };
 }
+
+export interface AiringScheduleItem {
+  id: number;
+  airingAt: number;
+  timeUntilAiring: number;
+  episode: number;
+  media: {
+    id: number;
+    type: string;
+    isAdult: boolean;
+    title: {
+      english: string;
+      romaji: string;
+    };
+    coverImage: {
+      extraLarge: string;
+      large: string;
+    };
+    startDate: {
+      year: number;
+      month: number;
+      day: number;
+    };
+    status: string;
+    episodes: number | null;
+    genres: string[];
+    averageScore: number;
+    format: string;
+    nextAiringEpisode: {
+      airingAt: number;
+      timeUntilAiring: number;
+      episode: number;
+    } | null;
+  };
+}
+
+interface AiringScheduleResponse {
+  Page: {
+    pageInfo: {
+      total: number;
+      hasNextPage: boolean;
+      currentPage: number;
+      lastPage: number;
+    };
+    airingSchedules: AiringScheduleItem[];
+  };
+}
+
+export const getAiringSchedule = async (
+  airingAt_greater: number,
+  airingAt_lesser: number
+): Promise<AiringScheduleItem[]> => {
+  const allSchedules: AiringScheduleItem[] = [];
+  let page = 1;
+  let hasNextPage = true;
+  const maxPages = 5;
+
+  while (hasNextPage && page <= maxPages) {
+    const data = await graphqlRequest<AiringScheduleResponse>(
+      AIRING_SCHEDULE_QUERY,
+      {
+        page,
+        perPage: 50,
+        airingAt_greater,
+        airingAt_lesser,
+      }
+    );
+
+    if (!data?.Page?.airingSchedules) break;
+
+    allSchedules.push(...data.Page.airingSchedules);
+    hasNextPage = data.Page.pageInfo.hasNextPage;
+    page++;
+  }
+
+  return allSchedules.filter((s) => s.media && !s.media.isAdult);
+};
 
 export const getAnimeRecommendations = async (
   animeId: number

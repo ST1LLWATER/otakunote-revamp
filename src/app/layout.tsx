@@ -4,7 +4,6 @@ import './globals.css';
 import ReactQueryProvider from './providers/ReactQueryProvider';
 import ThemeProvider from './providers/ThemeProvider';
 import { HeaderResponsive } from './components/header';
-import { SessionProvider } from './providers/SessionProvider';
 import DetailModal from './components/detail-modal';
 
 const geistSans = localFont({
@@ -22,6 +21,10 @@ const links = [
   {
     link: '/calendar',
     label: 'Calendar',
+  },
+  {
+    link: '/schedule',
+    label: 'Schedule',
   },
   {
     link: '/watchlist',
@@ -55,15 +58,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SessionProvider>
-            <ReactQueryProvider>
-              <div className="flex flex-col min-h-screen">
-                <HeaderResponsive links={links} />
-                <main className="flex-grow mt-16">{children}</main>
-                <DetailModal />
-              </div>
-            </ReactQueryProvider>
-          </SessionProvider>
+          <ReactQueryProvider>
+            <div className="flex flex-col min-h-screen">
+              <HeaderResponsive links={links} />
+              <main className="flex-grow mt-16">{children}</main>
+              <DetailModal />
+            </div>
+          </ReactQueryProvider>
         </ThemeProvider>
       </body>
     </html>
