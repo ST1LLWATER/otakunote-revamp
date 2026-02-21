@@ -34,6 +34,10 @@ const links = [
     link: '/search',
     label: 'Search',
   },
+  {
+    link: '/surprise',
+    label: 'Surprise Me!',
+  },
 ];
 
 export const metadata: Metadata = {

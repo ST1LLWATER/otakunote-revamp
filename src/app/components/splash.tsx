@@ -1,20 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+  animate,
+} from 'framer-motion';
 import Image from 'next/image';
 import localFont from 'next/font/local';
 
-// Load custom manga-style fonts
 const mangaFont = localFont({
   src: '../../../public/fonts/CabinSketch-Bold.ttf',
   variable: '--font-manga',
-  display: 'swap',
-});
-
-const sketchFont = localFont({
-  src: '../../../public/fonts/CabinSketch-Bold.ttf',
-  variable: '--font-sketch',
   display: 'swap',
 });
 
@@ -23,22 +22,58 @@ interface SplashScreenProps {
   duration?: number;
 }
 
+// Pre-computed positions to avoid Math.random() in render
+const SPEED_LINES = [
+  { top: 12, width: 78, delay: 0.0, dur: 0.6 },
+  { top: 28, width: 85, delay: 0.1, dur: 0.7 },
+  { top: 45, width: 72, delay: 0.2, dur: 0.5 },
+  { top: 62, width: 90, delay: 0.05, dur: 0.65 },
+  { top: 78, width: 68, delay: 0.15, dur: 0.55 },
+  { top: 88, width: 82, delay: 0.25, dur: 0.7 },
+];
+
+const PARTICLES = [
+  { x: 20, y: 30, size: 4, delay: 0.8 },
+  { x: 75, y: 20, size: 3, delay: 1.0 },
+  { x: 60, y: 70, size: 5, delay: 0.9 },
+  { x: 35, y: 80, size: 3, delay: 1.1 },
+  { x: 85, y: 55, size: 4, delay: 0.7 },
+  { x: 15, y: 60, size: 3, delay: 1.2 },
+  { x: 50, y: 15, size: 4, delay: 0.85 },
+  { x: 90, y: 40, size: 3, delay: 1.05 },
+];
+
 export function SplashScreen({
   onComplete,
-  duration = 3500,
+  duration = 3200,
 }: SplashScreenProps) {
   const [isVisible, setIsVisible] = useState(true);
+  const [phase, setPhase] = useState<'intro' | 'reveal' | 'exit'>('intro');
+
+  const progress = useMotionValue(0);
+  const progressWidth = useTransform(progress, [0, 1], ['0%', '100%']);
+
+  const handleComplete = useCallback(() => {
+    setIsVisible(false);
+    onComplete?.();
+  }, [onComplete]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-      if (onComplete) onComplete();
-    }, duration);
+    // Phase timing
+    const revealTimer = setTimeout(() => setPhase('reveal'), 400);
+    const exitTimer = setTimeout(() => setPhase('exit'), duration - 500);
+    const completeTimer = setTimeout(handleComplete, duration);
 
-    return () => clearTimeout(timer);
-  }, [duration, onComplete]);
+    // Animate progress bar
+    animate(progress, 1, { duration: duration / 1000 - 0.5, ease: 'easeOut' });
 
-  // Split the brand name into individual letters for animation
+    return () => {
+      clearTimeout(revealTimer);
+      clearTimeout(exitTimer);
+      clearTimeout(completeTimer);
+    };
+  }, [duration, handleComplete, progress]);
+
   const brandName = 'OtakuNote';
   const letters = brandName.split('');
 
@@ -46,444 +81,195 @@ export function SplashScreen({
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className={`fixed inset-0 z-50 flex items-center justify-center bg-[#0F0F1A] overflow-hidden ${mangaFont.variable} ${sketchFont.variable}`}
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
+          className={`fixed inset-0 z-50 flex items-center justify-center bg-[#0F0F1A] overflow-hidden ${mangaFont.variable}`}
+          exit={{ opacity: 0, scale: 1.05 }}
+          transition={{ duration: 0.4, ease: 'easeInOut' }}
         >
-          {/* Manga style background elements */}
+          {/* Radial gradient backdrop — pure CSS, no JS animation */}
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.15)_0%,transparent_70%)]" />
+          </div>
+
+          {/* Speed lines — GPU accelerated with will-change: transform */}
           <div className="absolute inset-0 overflow-hidden">
-            {/* Sketch-style background texture */}
-            <div className="absolute inset-0 opacity-10">
-              <svg
-                width="100%"
-                height="100%"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <filter id="noise">
-                  <feTurbulence
-                    type="fractalNoise"
-                    baseFrequency="0.65"
-                    numOctaves="3"
-                    stitchTiles="stitch"
-                  />
-                  <feColorMatrix
-                    type="matrix"
-                    values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0"
-                  />
-                </filter>
-                <rect width="100%" height="100%" filter="url(#noise)" />
-              </svg>
-            </div>
-
-            {/* Speed lines with sketch effect */}
-            <div className="absolute inset-0">
-              {Array.from({ length: 20 }).map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute bg-white/10"
-                  style={{
-                    top: `${Math.random() * 100}%`,
-                    left: 0,
-                    height: `${Math.random() * 2 + 1}px`,
-                    width: `${Math.random() * 30 + 70}%`,
-                    transform: `rotate(${Math.random() * 5 - 2.5}deg)`,
-                    filter: 'url(#sketch-filter)',
-                  }}
-                  initial={{ x: '-100%' }}
-                  animate={{ x: '200%' }}
-                  transition={{
-                    duration: Math.random() * 0.5 + 0.5,
-                    repeat: Number.POSITIVE_INFINITY,
-                    repeatType: 'loop',
-                    ease: 'linear',
-                    delay: Math.random() * 0.5,
-                  }}
-                />
-              ))}
-            </div>
-
-            {/* Manga style action bubbles with sketch effect */}
-            {Array.from({ length: 5 }).map((_, i) => (
+            {SPEED_LINES.map((line, i) => (
               <motion.div
                 key={i}
-                className="absolute rounded-full bg-gradient-to-br from-indigo-500/10 to-purple-500/10 backdrop-blur-sm border border-white/10"
+                className="absolute left-0 h-px bg-gradient-to-r from-transparent via-indigo-400/20 to-transparent"
                 style={{
-                  top: `${Math.random() * 80 + 10}%`,
-                  left: `${Math.random() * 80 + 10}%`,
-                  width: `${Math.random() * 100 + 50}px`,
-                  height: `${Math.random() * 100 + 50}px`,
-                  boxShadow: 'inset 0 0 10px rgba(255,255,255,0.1)',
-                  filter: 'url(#sketch-filter)',
+                  top: `${line.top}%`,
+                  width: `${line.width}%`,
+                  willChange: 'transform',
                 }}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: [0, 1.2, 1], opacity: [0, 0.7, 0.5] }}
+                initial={{ x: '-100%' }}
+                animate={{ x: '200%' }}
                 transition={{
-                  duration: 1,
-                  delay: Math.random() * 0.5 + 0.5,
-                  ease: 'easeOut',
+                  duration: line.dur,
+                  repeat: Infinity,
+                  repeatType: 'loop',
+                  ease: 'linear',
+                  delay: line.delay,
                 }}
               />
             ))}
-
-            {/* Sketch-style pen strokes */}
-            {Array.from({ length: 15 }).map((_, i) => {
-              const width = Math.random() * 100 + 50;
-              const height = Math.random() * 60 + 20;
-              return (
-                <motion.svg
-                  key={i}
-                  className="absolute"
-                  width={width}
-                  height={height}
-                  viewBox={`0 0 ${width} ${height}`}
-                  style={{
-                    top: `${Math.random() * 80 + 10}%`,
-                    left: `${Math.random() * 80 + 10}%`,
-                    transform: `rotate(${Math.random() * 360}deg)`,
-                  }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0, 0.3, 0] }}
-                  transition={{
-                    duration: 2,
-                    delay: Math.random() * 2,
-                    ease: 'easeInOut',
-                  }}
-                >
-                  <path
-                    d={`M${Math.random() * 10},${Math.random() * 10} 
-                       C${Math.random() * width * 0.3 + width * 0.1},${
-                      Math.random() * height * 0.5
-                    } 
-                        ${Math.random() * width * 0.3 + width * 0.4},${
-                      Math.random() * height * 0.5
-                    } 
-                        ${width - Math.random() * 10},${
-                      height - Math.random() * 10
-                    }`}
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="1"
-                    strokeLinecap="round"
-                    strokeDasharray="5,5"
-                    strokeOpacity="0.3"
-                  />
-                </motion.svg>
-              );
-            })}
-
-            {/* Manga style stars with sketch effect */}
-            {Array.from({ length: 15 }).map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute"
-                style={{
-                  top: `${Math.random() * 80 + 10}%`,
-                  left: `${Math.random() * 80 + 10}%`,
-                }}
-                initial={{ scale: 0, opacity: 0, rotate: 0 }}
-                animate={{
-                  scale: [0, 1.5, 1],
-                  opacity: [0, 1, 0],
-                  rotate: 360,
-                }}
-                transition={{
-                  duration: 1.5,
-                  delay: Math.random() * 1 + 0.5,
-                  ease: 'easeOut',
-                }}
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
-                    fill="url(#paint0_linear)"
-                    stroke="white"
-                    strokeWidth="0.5"
-                    strokeDasharray="1,1"
-                    style={{ filter: 'url(#sketch-filter)' }}
-                  />
-                  <defs>
-                    <linearGradient
-                      id="paint0_linear"
-                      x1="2"
-                      y1="2"
-                      x2="22"
-                      y2="21.02"
-                      gradientUnits="userSpaceOnUse"
-                    >
-                      <stop stopColor="#6366F1" />
-                      <stop offset="1" stopColor="#A855F7" />
-                    </linearGradient>
-                    <filter
-                      id="sketch-filter"
-                      x="0"
-                      y="0"
-                      width="100%"
-                      height="100%"
-                    >
-                      <feTurbulence
-                        baseFrequency="0.05"
-                        numOctaves="2"
-                        seed="5"
-                      />
-                      <feDisplacementMap in="SourceGraphic" scale="2" />
-                    </filter>
-                  </defs>
-                </svg>
-              </motion.div>
-            ))}
           </div>
 
-          {/* Anime character */}
-          <motion.div
-            className="absolute bottom-0 right-0 w-64 h-64 z-10 opacity-70"
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 0.7 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-          >
-            <Image
-              src="/cute.png"
-              alt="Anime Character"
-              width={300}
-              height={400}
-              className="object-contain"
+          {/* Floating particles — simple scale/opacity, no SVG filters */}
+          {PARTICLES.map((p, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full bg-indigo-400/30"
+              style={{
+                left: `${p.x}%`,
+                top: `${p.y}%`,
+                width: p.size,
+                height: p.size,
+                willChange: 'transform, opacity',
+              }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{
+                scale: [0, 1.5, 1],
+                opacity: [0, 0.8, 0],
+              }}
+              transition={{
+                duration: 2,
+                delay: p.delay,
+                ease: 'easeOut',
+              }}
             />
-          </motion.div>
+          ))}
 
-          {/* Sketch-style SVG filter for the text */}
-          <svg width="0" height="0" className="absolute">
-            <defs>
-              <filter
-                id="sketch-text"
-                x="-10%"
-                y="-10%"
-                width="120%"
-                height="120%"
-              >
-                <feTurbulence
-                  type="fractalNoise"
-                  baseFrequency="0.03"
-                  numOctaves="3"
-                  result="noise"
-                />
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
-              </filter>
-              <filter
-                id="pencil-texture"
-                x="0%"
-                y="0%"
-                width="100%"
-                height="100%"
-              >
-                <feTurbulence
-                  type="fractalNoise"
-                  baseFrequency="0.5"
-                  numOctaves="5"
-                  result="noise"
-                />
-                <feColorMatrix
-                  type="matrix"
-                  values="1 0 0 0 0
-                          0 1 0 0 0
-                          0 0 1 0 0
-                          0 0 0 0.15 0"
-                  in="noise"
-                  result="coloredNoise"
-                />
-                <feComposite
-                  operator="in"
-                  in="SourceGraphic"
-                  in2="coloredNoise"
-                  result="textureText"
-                />
-                <feMerge>
-                  <feMergeNode in="textureText" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-          </svg>
+          {/* Central content */}
+          <div className="relative z-20 flex flex-col items-center">
+            {/* Ink splash behind text */}
+            <motion.div
+              className="absolute -inset-20 bg-[radial-gradient(circle,rgba(99,102,241,0.2)_0%,transparent_60%)]"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={
+                phase !== 'intro'
+                  ? { scale: [0, 1.5, 1.2], opacity: [0, 0.6, 0.3] }
+                  : {}
+              }
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+            />
 
-          {/* 3D Brand Name with Manga Sketch Style */}
-          <div className="relative z-20">
-            <div className="flex justify-center items-center">
-              {letters.map((letter, index) => (
-                <motion.div
-                  key={index}
-                  className="relative"
-                  initial={{ y: -100, opacity: 0, rotateX: -90 }}
-                  animate={{ y: 0, opacity: 1, rotateX: 0 }}
-                  transition={{
-                    duration: 0.7,
-                    delay: 0.1 * index,
-                    type: 'spring',
-                    stiffness: 100,
-                  }}
-                >
-                  {/* 3D Letter - Front face with sketch style */}
-                  <div
-                    className={`text-6xl md:text-8xl ${
-                      index === 0 || index === 5
-                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500'
+            {/* Letter-by-letter reveal with staggered spring animation */}
+            <div className="flex items-center justify-center perspective-[800px]">
+              {letters.map((letter, index) => {
+                const isAccent = index === 0 || index === 5; // 'O' and 'N'
+                return (
+                  <motion.span
+                    key={index}
+                    className={`text-6xl md:text-8xl inline-block ${
+                      isAccent
+                        ? 'bg-clip-text text-transparent bg-gradient-to-br from-indigo-400 to-purple-500'
                         : 'text-white'
                     }`}
                     style={{
-                      textShadow: '0 4px 8px rgba(0,0,0,0.3)',
-                      filter: 'url(#pencil-texture)',
-                      WebkitTextStroke: '0.5px rgba(255,255,255,0.3)',
-                      letterSpacing: '1px',
                       fontFamily: 'var(--font-manga)',
                       fontWeight: 700,
+                      textShadow: isAccent
+                        ? 'none'
+                        : '0 0 30px rgba(99,102,241,0.3)',
+                      willChange: 'transform, opacity',
                     }}
-                  >
-                    {letter}
-                  </div>
-
-                  {/* Sketch effect overlay */}
-                  <div
-                    className={`absolute top-0 left-0 text-6xl md:text-8xl ${
-                      index === 0 || index === 5
-                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-500/30 to-purple-500/30'
-                        : 'text-white/30'
-                    }`}
-                    style={{
-                      filter: 'url(#sketch-text)',
-                      mixBlendMode: 'overlay',
-                      fontFamily: 'var(--font-manga)',
-                      fontWeight: 700,
+                    initial={{
+                      y: -80,
+                      opacity: 0,
+                      rotateX: -90,
+                      scale: 0.5,
                     }}
-                  >
-                    {letter}
-                  </div>
-
-                  {/* 3D Letter - Bottom shadow with sketch effect */}
-                  <motion.div
-                    className="absolute top-0 left-0 w-full h-full text-6xl md:text-8xl text-transparent"
-                    style={{
-                      textShadow: '0 6px 0 rgba(99, 102, 241, 0.5)',
-                      transform: 'translateY(4px) translateZ(-10px)',
-                      opacity: 0.5,
-                      filter: 'url(#sketch-text)',
-                      fontFamily: 'var(--font-manga)',
-                      fontWeight: 700,
-                    }}
-                    animate={{ y: [4, 6, 4] }}
+                    animate={
+                      phase !== 'intro'
+                        ? {
+                            y: 0,
+                            opacity: 1,
+                            rotateX: 0,
+                            scale: 1,
+                          }
+                        : {}
+                    }
                     transition={{
-                      duration: 2,
-                      repeat: Number.POSITIVE_INFINITY,
-                      ease: 'easeInOut',
+                      type: 'spring',
+                      stiffness: 150,
+                      damping: 12,
+                      delay: index * 0.06,
                     }}
                   >
                     {letter}
-                  </motion.div>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Manga style subtitle with sketch font */}
-            <motion.div
-              className="text-center mt-4 text-lg md:text-xl text-gray-300"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 1.2 }}
-              style={{
-                filter: 'url(#pencil-texture)',
-                fontFamily: 'var(--font-sketch)',
-              }}
-            >
-              <span className="inline-block px-4 py-1 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 backdrop-blur-sm rounded-md border border-indigo-500/30">
-                Your Anime Journey Begins
-              </span>
-            </motion.div>
-
-            {/* Manga style action lines around the logo - more sketch-like */}
-            <div className="absolute -inset-10 -z-10">
-              {Array.from({ length: 8 }).map((_, i) => {
-                const angle = (i * 45 * Math.PI) / 180;
-                const length = 100 + Math.random() * 50;
-                const startX = Math.cos(angle) * 100;
-                const startY = Math.sin(angle) * 100;
-                const endX = Math.cos(angle) * (100 + length);
-                const endY = Math.sin(angle) * (100 + length);
-
-                return (
-                  <motion.div
-                    key={i}
-                    className="absolute top-1/2 left-1/2 h-[2px] bg-gradient-to-r from-indigo-500/80 to-transparent"
-                    style={{
-                      width: length,
-                      transformOrigin: 'left center',
-                      rotate: `${(angle * 180) / Math.PI}deg`,
-                      x: startX,
-                      y: startY,
-                      filter: 'url(#sketch-text)',
-                    }}
-                    initial={{ scaleX: 0, opacity: 0 }}
-                    animate={{ scaleX: 1, opacity: [0, 0.8, 0] }}
-                    transition={{
-                      duration: 0.7,
-                      delay: 0.8 + i * 0.05,
-                      ease: 'easeOut',
-                    }}
-                  />
+                  </motion.span>
                 );
               })}
             </div>
 
-            {/* Hand-drawn circle around the logo */}
-          </div>
+            {/* Subtitle */}
+            <motion.p
+              className="mt-6 text-lg md:text-xl text-gray-400 tracking-wider"
+              initial={{ opacity: 0, y: 15 }}
+              animate={
+                phase !== 'intro' ? { opacity: 1, y: 0 } : {}
+              }
+              transition={{ duration: 0.5, delay: 0.7 }}
+              style={{ fontFamily: 'var(--font-manga)' }}
+            >
+              <span className="inline-block px-5 py-1.5 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg border border-indigo-500/20">
+                Your Anime Journey Begins
+              </span>
+            </motion.p>
 
-          {/* Manga style loading indicator with sketch effect */}
-          <motion.div
-            className="absolute bottom-10 left-0 right-0 flex justify-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.5, duration: 0.5 }}
-          >
-            <div className="flex space-x-2">
-              {[0, 1, 2].map((i) => (
+            {/* Action lines radiating from center */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => (
                 <motion.div
                   key={i}
-                  className="w-3 h-3 rounded-full bg-indigo-500"
-                  style={{ filter: 'url(#sketch-text)' }}
-                  animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                  className="absolute h-[1px] bg-gradient-to-r from-indigo-500/60 to-transparent origin-left"
+                  style={{
+                    width: 120,
+                    rotate: `${angle}deg`,
+                    willChange: 'transform, opacity',
+                  }}
+                  initial={{ scaleX: 0, opacity: 0 }}
+                  animate={
+                    phase !== 'intro'
+                      ? { scaleX: [0, 1, 0.6], opacity: [0, 0.8, 0] }
+                      : {}
+                  }
                   transition={{
-                    duration: 0.8,
-                    repeat: Number.POSITIVE_INFINITY,
-                    delay: i * 0.2,
-                    ease: 'easeInOut',
+                    duration: 0.5,
+                    delay: 0.3 + i * 0.03,
+                    ease: 'easeOut',
                   }}
                 />
               ))}
             </div>
+          </div>
+
+          {/* Anime character */}
+          <motion.div
+            className="absolute bottom-0 right-0 w-52 h-52 z-10"
+            initial={{ y: 60, opacity: 0 }}
+            animate={phase !== 'intro' ? { y: 0, opacity: 0.6 } : {}}
+            transition={{ duration: 0.6, delay: 0.5, ease: 'easeOut' }}
+          >
+            <Image
+              src="/cute.png"
+              alt="Anime Character"
+              width={250}
+              height={330}
+              className="object-contain"
+              priority
+            />
           </motion.div>
 
-          {/* Sketch-style sound effect text */}
-          <motion.div
-            className="absolute top-1/4 right-1/4 font-sketch text-2xl text-white/70 transform rotate-12"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: [0, 1.2, 1], opacity: [0, 1, 0] }}
-            transition={{ duration: 1, delay: 0.8 }}
-            style={{ filter: 'url(#sketch-text)' }}
-          >
-            BOOM!
-          </motion.div>
-
-          <motion.div
-            className="absolute bottom-1/3 left-1/4 font-sketch text-2xl text-white/70 transform -rotate-6"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: [0, 1.2, 1], opacity: [0, 1, 0] }}
-            transition={{ duration: 1, delay: 1.2 }}
-            style={{ filter: 'url(#sketch-text)' }}
-          >
-            WHOOSH!
-          </motion.div>
+          {/* Progress bar at bottom */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-48">
+            <div className="h-[2px] bg-white/10 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
+                style={{ width: progressWidth }}
+              />
+            </div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

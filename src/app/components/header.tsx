@@ -21,6 +21,7 @@ import {
   Calendar,
   CalendarClock,
   BarChart4,
+  Sparkles,
 } from 'lucide-react';
 import { useAtom } from 'jotai';
 import { watchlistedIdsAtom } from '@/store';
@@ -90,6 +91,7 @@ export function HeaderResponsive({ links }: HeaderResponsiveProps) {
       Schedule: <CalendarClock className="h-4 w-4" />,
       Stats: <BarChart4 className="h-4 w-4" />,
       Search: <Search className="h-4 w-4" />,
+      'Surprise Me!': <Sparkles className="h-4 w-4" />,
     };
 
     return iconMap[label] || null;

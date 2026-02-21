@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   List,
@@ -12,10 +12,6 @@ import {
 } from 'lucide-react';
 import AllAnimes from './AllAnimes';
 import { useWatchlistStore } from '@/store/watchlistStore';
-import {
-  getAnimeRecommendations,
-  type RecommendationItem,
-} from '@/lib/api/animeApi';
 
 type TabType = 'All' | 'Watching' | 'Plan to Watch' | 'Completed' | 'Dropped';
 
@@ -72,10 +68,6 @@ const STAT_CARDS = [
 
 export default function WatchlistPage() {
   const [activeTab, setActiveTab] = useState<TabType>('All');
-  const [recommendations, setRecommendations] = useState<RecommendationItem[]>(
-    []
-  );
-  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
 
   const watchlistStore = useWatchlistStore();
   const items = watchlistStore?.items || [];
@@ -95,69 +87,6 @@ export default function WatchlistPage() {
       ? items.filter((item) => item.status === 'dropped').length
       : 0,
   };
-
-  // Get all valid anime IDs from watchlist for recommendations
-  const watchlistIds = useMemo(() => {
-    if (!Array.isArray(items)) return [];
-    return items
-      .map((item) => item.id)
-      .filter((id) => id);
-  }, [items]);
-
-  // Fetch recommendations from 2 random animes
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      if (watchlistIds.length === 0) {
-        setRecommendations([]);
-        return;
-      }
-
-      setLoadingRecommendations(true);
-
-      try {
-        // Shuffle and take exactly 2 random anime (or just 1 if only 1 exists)
-        const shuffled = [...watchlistIds].sort(() => Math.random() - 0.5);
-        const selectedIds = shuffled.slice(0, Math.min(2, shuffled.length));
-
-        // Fetch recommendations for each selected anime
-        const allRecommendations = await Promise.all(
-          selectedIds.map((id) => getAnimeRecommendations(Number(id)))
-        );
-
-        // Flatten and deduplicate by anime ID
-        const seen = new Set<string>();
-        const currentWatchlistSet = new Set(items.map((item) => item.id));
-
-        const uniqueRecommendations = allRecommendations
-          .flat()
-          .filter((rec) => {
-            // Skip if we've already seen this anime or it's in the watchlist
-            if (
-              seen.has(rec.anime.id) ||
-              currentWatchlistSet.has(rec.anime.id)
-            ) {
-              return false;
-            }
-            seen.add(rec.anime.id);
-            return true;
-          });
-
-        // Shuffle the final list and take top 12
-        const finalRecommendations = uniqueRecommendations
-          .sort(() => Math.random() - 0.5)
-          .slice(0, 12);
-
-        setRecommendations(finalRecommendations);
-      } catch (error) {
-        console.error('Error fetching recommendations:', error);
-        setRecommendations([]);
-      } finally {
-        setLoadingRecommendations(false);
-      }
-    };
-
-    fetchRecommendations();
-  }, [watchlistIds, items]);
 
   const filteredAnimeIds = useMemo(() => {
     if (!Array.isArray(items) || items.length === 0) return [];
@@ -353,10 +282,6 @@ export default function WatchlistPage() {
         <AllAnimes
           filterIds={filteredAnimeIds}
           activeTab={activeTab}
-          recommendations={activeTab === 'All' ? recommendations : []}
-          loadingRecommendations={
-            activeTab === 'All' ? loadingRecommendations : false
-          }
         />
       </div>
     </div>
