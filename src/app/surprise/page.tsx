@@ -26,7 +26,7 @@ type PageState = 'idle' | 'loading' | 'revealed';
 interface SeedAnime {
   id: number;
   title: { romaji: string; english: string | null };
-  coverImage: { extraLarge: string; large: string };
+  coverImage: { extraLarge: string };
   genres: string[];
 }
 
@@ -113,7 +113,6 @@ export default function SurprisePage() {
         },
         coverImage: {
           extraLarge: seedData.coverImage?.extraLarge || '',
-          large: seedData.coverImage?.large || '',
         },
         genres: (seedData.genres?.filter(Boolean) as string[]) || [],
       };
@@ -399,8 +398,7 @@ export default function SurprisePage() {
                     <div className="relative w-32 h-44 rounded-xl overflow-hidden flex-shrink-0 shadow-lg">
                       <Image
                         src={
-                          seedAnime.coverImage.extraLarge ||
-                          seedAnime.coverImage.large
+                          seedAnime.coverImage.extraLarge
                         }
                         alt={
                           seedAnime.title.english ||
@@ -480,8 +478,7 @@ export default function SurprisePage() {
                             <div className="relative flex-1 min-h-0 aspect-[2/3] overflow-hidden">
                               <Image
                                 src={
-                                  rec.anime.coverImage.extraLarge ||
-                                  rec.anime.coverImage.large
+                                  rec.anime.coverImage.extraLarge
                                 }
                                 alt={
                                   rec.anime.title.english ||
