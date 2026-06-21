@@ -67,7 +67,6 @@ const AnimeCard = ({
   const watchlistStore = useWatchlistStore();
   const isInWatchlist = watchlistStore?.isInWatchlist;
   const getWatchlistStatus = watchlistStore?.getWatchlistStatus;
-  const getWatchedEpisodes = watchlistStore?.getWatchedEpisodes;
 
   // Handle both string and number IDs
   const animeId = typeof anime.id === 'number' ? String(anime.id) : anime.id;
@@ -84,7 +83,6 @@ const AnimeCard = ({
   const [isInWatchlistState, setIsInWatchlistState] = useState(false);
   const [watchlistStatus, setWatchlistStatus] =
     useState<WatchlistStatus>('plan_to_watch');
-  const [watchedEpisodes, setWatchedEpisodes] = useState(0);
 
   useEffect(() => {
     if (animeId) {
@@ -92,7 +90,7 @@ const AnimeCard = ({
       const inWatchlist = checkIsInWatchlist(animeId);
       setIsInWatchlistState(inWatchlist);
 
-      // If in watchlist, get status and watched episodes
+      // If in watchlist, get status
       if (inWatchlist) {
         if (typeof getWatchlistStatus === 'function') {
           const status = getWatchlistStatus(animeId);
@@ -101,13 +99,9 @@ const AnimeCard = ({
           }
         }
 
-        if (typeof getWatchedEpisodes === 'function') {
-          const episodes = getWatchedEpisodes(animeId);
-          setWatchedEpisodes(episodes);
-        }
       }
     }
-  }, [animeId, checkIsInWatchlist, getWatchlistStatus, getWatchedEpisodes]);
+  }, [animeId, checkIsInWatchlist, getWatchlistStatus]);
 
   // Use global watchlist change events to update state
   useEffect(() => {
@@ -116,10 +110,9 @@ const AnimeCard = ({
       if (id === animeId) {
         setIsInWatchlistState(added);
 
-        // Reset status and episodes if removed from watchlist
+        // Reset status if removed from watchlist
         if (!added) {
           setWatchlistStatus('plan_to_watch');
-          setWatchedEpisodes(0);
         }
       }
     });
@@ -295,7 +288,7 @@ const AnimeCard = ({
               })}
             </div>
           </Draggable>
-          <div className="text-lg mb-2 font-bold text-white leading-6">
+          <div className="text-base sm:text-lg mb-2 font-bold text-white leading-snug sm:leading-6">
             <TruncateText
               maxLines={3}
               text={
@@ -331,7 +324,7 @@ const AnimeCard = ({
               )}
             </>
           </Draggable>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
             {isInWatchlistState ? (
               <>
                 <REMOVE_BUTTON

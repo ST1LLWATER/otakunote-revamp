@@ -6,7 +6,7 @@ import {
 } from '@/store/watchlistStore';
 import { searchAnime } from '@/lib/api/animeApi';
 import type { CardInterface } from '@/lib/types';
-import { Loader2, BookOpen, Search } from 'lucide-react';
+import { Loader2, BookOpen, Search, Compass } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -155,9 +155,9 @@ const AllAnimes = ({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
-        <p className="text-sm text-gray-400">Loading your watchlist...</p>
+      <div className="flex flex-col items-center justify-center py-24 gap-3">
+        <Loader2 className="w-6 h-6 animate-spin text-white/30" />
+        <p className="text-sm text-white/40">Loading titles…</p>
       </div>
     );
   }
@@ -169,17 +169,16 @@ const AllAnimes = ({
 
   if (showEmptyState) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-          <Search className="w-7 h-7 text-gray-500" />
+      <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
+        <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
+          <Search className="w-5 h-5 text-white/30" />
         </div>
-        <div className="text-center">
-          <h3 className="text-lg font-semibold text-white mb-1">
+        <div>
+          <h3 className="text-base font-medium text-white/80 mb-1">
             Nothing here yet
           </h3>
-          <p className="text-sm text-gray-400 max-w-sm">
-            No anime marked as &quot;{activeTab}&quot;. Update the status of
-            your tracked anime to see them here.
+          <p className="text-sm text-white/40 max-w-sm">
+            No anime marked as &quot;{activeTab}&quot;. Update a title&apos;s status to see it here.
           </p>
         </div>
       </div>
@@ -188,22 +187,21 @@ const AllAnimes = ({
 
   if (showAllEmptyState) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-          <BookOpen className="w-7 h-7 text-gray-500" />
+      <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
+        <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
+          <BookOpen className="w-5 h-5 text-white/30" />
         </div>
-        <div className="text-center">
-          <h3 className="text-lg font-semibold text-white mb-1">
+        <div>
+          <h3 className="text-base font-medium text-white/80 mb-1">
             Your watchlist is empty
           </h3>
-          <p className="text-sm text-gray-400 max-w-sm">
-            Start building your watchlist by browsing anime and adding titles
-            you want to track.
+          <p className="text-sm text-white/40 max-w-sm">
+            Browse anime and add titles you want to track.
           </p>
         </div>
-        <Link href="/">
-          <Button className="mt-2 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 border-none">
-            <Search className="h-4 w-4 mr-2" /> Browse Anime
+        <Link href="/calendar">
+          <Button className="mt-1 rounded-full px-5 h-10 bg-white text-black hover:bg-white/90 border-none font-medium">
+            <Compass className="h-4 w-4 mr-2" /> Browse anime
           </Button>
         </Link>
       </div>
@@ -211,10 +209,9 @@ const AllAnimes = ({
   }
 
   return (
-    <div className="space-y-10">
-      {/* Watchlist Grid */}
+    <div>
       {animeData.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {animeData.map((anime, index) => (
             <motion.div
               key={anime.id}
