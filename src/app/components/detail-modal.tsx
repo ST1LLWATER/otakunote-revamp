@@ -11,6 +11,9 @@ import { Dialog, DialogContent } from './ui/dialog';
 import { useAtom } from 'jotai';
 import { detailsModalAtom, selectedAnimeAtom } from '@/store';
 import { ScrollArea } from './ui/scroll-area';
+import EpisodeTracker from './episode-tracker';
+import { useWatchlistStore } from '@/store/watchlistStore';
+import { toast } from 'sonner';
 
 type ModalType = {
   session?: boolean;
@@ -21,8 +24,39 @@ const DetailModal = ({ session = true, watchlisted = true }: ModalType) => {
   const [isOpen, setIsOpen] = useAtom(detailsModalAtom);
   const [data, setData] = useAtom(selectedAnimeAtom);
 
-  const [watchedEpisodes, setWatchedEpisodes] = useState(1);
   const router = useRouter();
+
+  const watchlistStore = useWatchlistStore();
+  const animeId = data?.id ? String(data.id) : '';
+  const isInWatchlist = watchlistStore?.isInWatchlist(animeId) ?? false;
+
+  const [watchedEpisodes, setWatchedEpisodes] = useState(() => {
+    if (!isInWatchlist || !watchlistStore?.getWatchedEpisodes) return 0;
+    return watchlistStore.getWatchedEpisodes(animeId);
+  });
+
+  useEffect(() => {
+    if (isInWatchlist && watchlistStore?.getWatchedEpisodes) {
+      setWatchedEpisodes(watchlistStore.getWatchedEpisodes(animeId));
+    } else {
+      setWatchedEpisodes(0);
+    }
+  }, [animeId, isInWatchlist, watchlistStore?.getWatchedEpisodes]);
+
+  const handleEpisodeChange = (id: string, episode: number) => {
+    if (!isInWatchlist) return;
+    if (watchlistStore?.updateWatchedEpisodes) {
+      const previous = watchedEpisodes;
+      watchlistStore.updateWatchedEpisodes(id, episode);
+      setWatchedEpisodes(episode);
+
+      if (episode > previous) {
+        toast.success(`Watched ${episode} episode${episode === 1 ? '' : 's'}`);
+      } else if (episode < previous) {
+        toast.info(`Marked episode ${previous} as unwatched`);
+      }
+    }
+  };
 
   if (!data) {
     return <Loader isOpen={isOpen} />;
@@ -93,6 +127,16 @@ const DetailModal = ({ session = true, watchlisted = true }: ModalType) => {
                 />
               )}
             </div>
+            {isInWatchlist && (data.episodes ?? 0) > 0 && (
+              <EpisodeTracker
+                animeId={animeId}
+                totalEpisodes={data.episodes ?? 0}
+                watchedEpisodes={watchedEpisodes}
+                onEpisodeChange={handleEpisodeChange}
+                className="mb-5"
+              />
+            )}
+
             {(data.characterPreview?.edges?.length ?? 0) > 0 && (
               <Draggable className="flex mb-4 gap-5 w-full pb-2.5 cursor-pointer overflow-x-auto scrollbar-custom">
                 <div className="flex gap-5">
